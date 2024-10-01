@@ -12,15 +12,94 @@
     
     {% block content %}
 
-    <div class="ha">
-        <div class="data firstname">
-            <span class="data-title">First Name</span>
-            <span class="data-list">Shir Keilah</span>
-            <span class="data-list">Shir Keinan</span>
-            <span class="data-list">Shir Kairos</span>
-            <span class="data-list">Angelyn</span>
-            <span class="data-list">Preciano</span>
+    <h3 id="studListTitle" align="center">List of Colleges</h3>
+    <table id="studentTable" class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Year</th>
+                <th>Gender</th>
+                <th>Course</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.id }}</td>
+                <td>{{ student.firstname }}</td>
+                <td>{{ student.lastname }}</td>
+                <td>{{ student.year }}</td>
+                <td>{{ student.gender }}</td>
+                <td>{{ student.course }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br/>
+
+    <button id="showFormBtn" class="btn btn-success" onclick="showForm()">Add New Student</button>
+    <form id="studentForm" method="POST" action="/" style="display: none; margin-top: 20px;">
+        <h3 align="center">New Student</h3>
+
+        <div class="form-group">
+            <label for="id">ID Number</label>
+            <input type="text" class="form-control" id="id" name="id" placeholder="e.g. 2023-0001"
+                pattern="^\d{4}-\d{4}$" title="ID must be in the format ####-####" required />
         </div>
+
+        <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" class="form-control" id="firstName" name="firstname" placeholder="Enter first name" required />
+        </div>
+
+        <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" class="form-control" id="lastName" name="lastname" placeholder="Enter last name" required />
+        </div>
+
+        <div class="form-group">
+            <label for="year">Year Level</label>
+            <input type="number" class="form-control" id="year" name="year" min="1" max="4" placeholder="Enter year level (1-4)" required />
+        </div>
+
+        <div class="form-group">
+            <label for="gender">Gender</label>
+            <select class="form-control" id="gender" name="gender" required>
+                <option value="" disabled selected>Select Gender</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="O">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="program">Course Code</label>
+            <input type="text" class="form-control" id="program" name="course" placeholder="e.g. BSCS" />
+        </div>
+
+        <br/>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
+    </form>
+
+    <script>
+        function showForm() {
+            document.getElementById("studentForm").style.display = "block";  
+            document.getElementById("studentTable").style.display = "none";
+            document.getElementById("studListTitle").style.display = "none";
+            document.getElementById("showFormBtn").style.display = "none";   
+        }
+
+        function cancelForm() {
+            document.getElementById("studentForm").reset(); 
+            document.getElementById("studentForm").style.display = "none";   
+            document.getElementById("studentTable").style.display = "table";
+            document.getElementById("studListTitle").style.display = "block";
+            document.getElementById("showFormBtn").style.display = "block"; 
+        }
+    </script>
 
     {% endblock %}
 </body>
