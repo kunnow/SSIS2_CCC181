@@ -12,7 +12,6 @@ def students():
     students = []
 
     if request.method == 'POST':
-
         student_id = request.form.get('id')
         firstName = request.form.get('firstname')
         lastName = request.form.get('lastname')
@@ -36,12 +35,22 @@ def students():
                 )
                 cursor = connection.cursor()
 
-                query = """INSERT INTO student (id, firstname, lastname, year, gender, course) 
-                           VALUES (%s, %s, %s, %s, %s, %s)"""
-                cursor.execute(query, (student_id, firstName, lastName, yearLevel, gender, course))
+                cursor.execute("SELECT * FROM student WHERE id = %s", (student_id,))
+                existing_student = cursor.fetchone()
+
+                if existing_student:  
+                    query = """UPDATE student 
+                               SET firstname = %s, lastname = %s, year = %s, gender = %s, course = %s 
+                               WHERE id = %s"""
+                    cursor.execute(query, (firstName, lastName, yearLevel, gender, course, student_id))
+                    flash('Student updated successfully.', category='success')
+                else: 
+                    query = """INSERT INTO student (id, firstname, lastname, year, gender, course) 
+                               VALUES (%s, %s, %s, %s, %s, %s)"""
+                    cursor.execute(query, (student_id, firstName, lastName, yearLevel, gender, course))
+                    flash('Student added successfully.', category='success')
 
                 connection.commit()
-                flash('Student added successfully.', category='success')
 
             except mysql.connector.Error as err:
                 flash(f"Error: {err}", category='error')
@@ -70,6 +79,31 @@ def students():
         connection.close()
 
     return render_template('students.html', students=students)
+
+@views.route('/students/delete/<student_id>', methods=['POST'])
+def delete_student(student_id):
+    try:
+        connection = mysql.connector.connect(
+            host=current_app.config['MYSQL_HOST'],
+            user=current_app.config['MYSQL_USER'],
+            password=current_app.config['MYSQL_PASSWORD'],
+            database=current_app.config['MYSQL_DB']
+        )
+        cursor = connection.cursor()
+
+        query = "DELETE FROM student WHERE id = %s"
+        cursor.execute(query, (student_id,))
+        connection.commit()
+        flash('Student deleted successfully.', category='success')
+
+    except mysql.connector.Error as err:
+        flash(f"Error: {err}", category='error')
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for('views.students'))  
 
 @views.route('/programs', endpoint='programs')
 def students():
