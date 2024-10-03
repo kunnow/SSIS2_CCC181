@@ -50,7 +50,7 @@
     <button id="showCollegeFormBtn" class="btn btn-success" onclick="showCollegeForm()">Add New College</button>
 
     <form id="collegeForm" method="POST" action="{{ url_for('views.colleges') }}" style="display: none; margin-top: 20px;">
-        <input type="hidden" id="operation" name="action" value="
+        <input type="hidden" id="operation" name="action" value=""/>
         <input type="hidden" id="edit_code" name="originalCollegeCode" value="" />
 
         <h3 align="center" id="formTitle">New College</h3>

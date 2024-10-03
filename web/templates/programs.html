@@ -1,106 +1,97 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-    <head>
-        <meta charset="utf-8">
-        <title> SSIS </title>
-        <link rel="stylesheet" href="static/css/style.css">
-        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-<body>
-    {% extends 'home.html' %}
-    
-    {% block content %}
+{% extends "base.html" %}
 
-    <h3 id="studListTitle" align="center">List of Programs</h3>
-    <table id="studentTable" class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Year</th>
-                <th>Gender</th>
-                <th>Course</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for student in students %}
-            <tr>
-                <td>{{ student.id }}</td>
-                <td>{{ student.firstname }}</td>
-                <td>{{ student.lastname }}</td>
-                <td>{{ student.year }}</td>
-                <td>{{ student.gender }}</td>
-                <td>{{ student.course }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+{% block content %}
+
+<h3 id="progListTitle" align="center">List of Programs</h3>
+<table id="programTable" class="table">
+    <thead>
+        <tr>
+            <th>Course Code</th>
+            <th>Course Name</th>
+            <th>College Code</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for program in programs %}
+        <tr>
+            <td>{{ program.code }}</td>
+            <td>{{ program.name }}</td>
+            <td>{{ program.college_code }}</td>
+            <td>
+                <button class="btn btn-outline-success" onclick="editProgram('{{ program.code }}', '{{ program.name }}', '{{ program.college_code }}')">Update</button>
+                <form action="{{ url_for('views.delete_program', course_code=program.code) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure?');">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br/>
+<button id="showFormBtn" class="btn btn-success" onclick="showForm()">Add New Program</button>
+
+<form id="programForm" method="POST" action="{{ url_for('views.programs') }}" style="display: none; margin-top: 20px;">
+    <h3 align="center" id="formTitle">New Program</h3>
+
+    <div class="form-group">
+        <label for="courseCode">Course Code</label>
+        <input type="text" class="form-control" id="courseCode" name="courseCode" placeholder="Enter Course Code" required />
+    </div>
+
+    <div class="form-group">
+        <label for="courseName">Course Name</label>
+        <input type="text" class="form-control" id="courseName" name="courseName" placeholder="Enter Course Name" required />
+    </div>
+
+    <div class="form-group">
+        <label for="collegeCode">College Code</label>
+        <input type="text" class="form-control" id="collegeCode" name="collegeCode" placeholder="Enter College Code" required />
+    </div>
+
+    <input type="hidden" id="originalCourseCode" name="originalCourseCode" />
+    <input type="hidden" id="action" name="action" value="add" />
+
     <br/>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
+</form>
 
-    <button id="showFormBtn" class="btn btn-success" onclick="showForm()">Add New Student</button>
-    <form id="studentForm" method="POST" action="/" style="display: none; margin-top: 20px;">
-        <h3 align="center">New Student</h3>
+<script>
+    function showForm() {
+        document.getElementById("programForm").style.display = "block";  
+        document.getElementById("programTable").style.display = "none";
+        document.getElementById("showFormBtn").style.display = "none";
+        document.getElementById("formTitle").innerText = "New Program"; 
+        document.getElementById("action").value = "add"; 
+        document.getElementById("progListTitle").style.display = "none";
+    }
 
-        <div class="form-group">
-            <label for="id">ID Number</label>
-            <input type="text" class="form-control" id="id" name="id" placeholder="e.g. 2023-0001"
-                pattern="^\d{4}-\d{4}$" title="ID must be in the format ####-####" required />
-        </div>
+    function editProgram(code, name, collegeCode) {
+        document.getElementById("programForm").style.display = "block";  
+        document.getElementById("programTable").style.display = "none";
+        document.getElementById("showFormBtn").style.display = "none";
+        document.getElementById("progListTitle").style.display = "none";
 
-        <div class="form-group">
-            <label for="firstName">First Name</label>
-            <input type="text" class="form-control" id="firstName" name="firstname" placeholder="Enter first name" required />
-        </div>
+        document.getElementById("courseCode").value = code;
+        document.getElementById("courseCode").readOnly = false;  
+        document.getElementById("courseName").value = name;
+        document.getElementById("collegeCode").value = collegeCode;
+        document.getElementById("collegeCode").readOnly = true;
 
-        <div class="form-group">
-            <label for="lastName">Last Name</label>
-            <input type="text" class="form-control" id="lastName" name="lastname" placeholder="Enter last name" required />
-        </div>
+        document.getElementById("formTitle").innerText = "Edit Program"; 
+        document.getElementById("action").value = "edit"; 
+        document.getElementById("originalCourseCode").value = code; 
+    }
 
-        <div class="form-group">
-            <label for="year">Year Level</label>
-            <input type="number" class="form-control" id="year" name="year" min="1" max="4" placeholder="Enter year level (1-4)" required />
-        </div>
+    function cancelForm() {
+        document.getElementById("programForm").reset();
+        document.getElementById("programForm").style.display = "none";   
+        document.getElementById("programTable").style.display = "table";
+        document.getElementById("showFormBtn").style.display = "block";  
+        document.getElementById("courseCode").readOnly = false;  
+    }
+</script>
 
-        <div class="form-group">
-            <label for="gender">Gender</label>
-            <select class="form-control" id="gender" name="gender" required>
-                <option value="" disabled selected>Select Gender</option>
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-                <option value="O">Other</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="program">Course Code</label>
-            <input type="text" class="form-control" id="program" name="course" placeholder="e.g. BSCS" />
-        </div>
-
-        <br/>
-        <button type="submit" class="btn btn-primary">Submit</button>
-        <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
-    </form>
-
-    <script>
-        function showForm() {
-            document.getElementById("studentForm").style.display = "block";  
-            document.getElementById("studentTable").style.display = "none";
-            document.getElementById("studListTitle").style.display = "none";
-            document.getElementById("showFormBtn").style.display = "none";   
-        }
-
-        function cancelForm() {
-            document.getElementById("studentForm").reset(); 
-            document.getElementById("studentForm").style.display = "none";   
-            document.getElementById("studentTable").style.display = "table";
-            document.getElementById("studListTitle").style.display = "block";
-            document.getElementById("showFormBtn").style.display = "block"; 
-        }
-    </script>
-
-    {% endblock %}
-</body>
-</html>
+{% endblock %}
