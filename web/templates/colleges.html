@@ -16,9 +16,9 @@
     <table id="collegeTable" class="table">
         <thead>
             <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Actions</th>
+                <th>College Code</th>
+                <th>College Name</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -28,7 +28,8 @@
                 <td>{{ college.name }}</td>
                 <td>
                     <button type="button" 
-                            onclick="editCollege('{{ college.code }}', '{{ college.name }}')" 
+                            onclick="editCollege('{{ college.code }}', 
+                                                '{{ college.name }}')" 
                             class="btn btn-warning btn-sm">
                         Edit
                     </button>
@@ -48,7 +49,6 @@
     <br/>
 
     <button id="showCollegeFormBtn" class="btn btn-success" onclick="showCollegeForm()">Add New College</button>
-
     <form id="collegeForm" method="POST" action="{{ url_for('views.colleges') }}" style="display: none; margin-top: 20px;">
         <input type="hidden" id="operation" name="action" value=""/>
         <input type="hidden" id="edit_code" name="originalCollegeCode" value="" />

@@ -9,7 +9,7 @@
             <th>Course Code</th>
             <th>Course Name</th>
             <th>College Code</th>
-            <th>Actions</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -19,9 +19,11 @@
             <td>{{ program.name }}</td>
             <td>{{ program.college_code }}</td>
             <td>
-                <button class="btn btn-outline-success" onclick="editProgram('{{ program.code }}', '{{ program.name }}', '{{ program.college_code }}')">Update</button>
+                <button class="btn btn-warning btn-sm" onclick="editProgram('{{ program.code }}', 
+                                                                            '{{ program.name }}', 
+                                                                            '{{ program.college_code }}')">Edit</button>
                 <form action="{{ url_for('views.delete_program', course_code=program.code) }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure?');">Delete</button>
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');">Delete</button>
                 </form>
             </td>
         </tr>
@@ -78,7 +80,6 @@
         document.getElementById("courseCode").readOnly = false;  
         document.getElementById("courseName").value = name;
         document.getElementById("collegeCode").value = collegeCode;
-        document.getElementById("collegeCode").readOnly = true;
 
         document.getElementById("formTitle").innerText = "Edit Program"; 
         document.getElementById("action").value = "edit"; 

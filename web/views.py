@@ -108,6 +108,7 @@ def delete_student(student_id):
 @views.route('/programs', methods=['GET', 'POST'])
 def programs():
     try:
+        # Establish database connection
         connection = mysql.connector.connect(
             host=current_app.config['MYSQL_HOST'],
             user=current_app.config['MYSQL_USER'],
@@ -121,12 +122,14 @@ def programs():
             course_code = request.form.get('courseCode')
             course_name = request.form.get('courseName')
             college_code = request.form.get('collegeCode')
-            original_course_code = request.form.get('originalCourseCode') 
+            original_course_code = request.form.get('originalCourseCode')  # Hidden field for identifying the original code
 
+            # Validate that no field is left empty
             if len(course_code) == 0 or len(course_name) == 0 or len(college_code) == 0:
                 flash('All fields are required.', category='error')
             else:
                 if action == 'add':
+                    # Handle adding a new program
                     try:
                         query = "INSERT INTO program (code, name, college_code) VALUES (%s, %s, %s)"
                         cursor.execute(query, (course_code, course_name, college_code))
@@ -136,7 +139,9 @@ def programs():
                         flash(f"Error adding program: {err}", category='error')
 
                 elif action == 'edit':
+                    # Handle editing an existing program
                     try:
+                        # Check for unique course code if it was changed
                         query = "SELECT COUNT(*) FROM program WHERE code = %s AND code != %s"
                         cursor.execute(query, (course_code, original_course_code))
                         count = cursor.fetchone()['COUNT(*)']
@@ -144,14 +149,16 @@ def programs():
                         if count > 0:
                             flash('Course code must be unique.', category='error')
                         else:
-                            query = "UPDATE program SET code = %s, name = %s WHERE code = %s"
-                            cursor.execute(query, (course_code, course_name, original_course_code))
+                            # Update the program, including college_code
+                            query = "UPDATE program SET code = %s, name = %s, college_code = %s WHERE code = %s"
+                            cursor.execute(query, (course_code, course_name, college_code, original_course_code))
                             connection.commit()
                             flash('Program updated successfully!', category='success')
 
                     except mysql.connector.Error as err:
                         flash(f"Error updating program: {err}", category='error')
 
+        # Fetch all programs for display
         cursor.execute("SELECT * FROM program")
         programs = cursor.fetchall()
 
@@ -164,6 +171,7 @@ def programs():
         connection.close()
 
     return render_template('programs.html', programs=programs)
+
 
 @views.route('/programs/delete/<course_code>', methods=['POST'])
 def delete_program(course_code):
@@ -279,3 +287,44 @@ def delete_college(code):
             connection.close()
 
     return redirect(url_for('views.colleges'))
+
+@views.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('query')
+    category = request.args.get('searchCategory')
+    
+    try:
+        connection = mysql.connector.connect(
+            host=current_app.config['MYSQL_HOST'],
+            user=current_app.config['MYSQL_USER'],
+            password=current_app.config['MYSQL_PASSWORD'],
+            database=current_app.config['MYSQL_DB']
+        )
+        cursor = connection.cursor(dictionary=True)
+
+        if category == 'students':
+            cursor.execute("SELECT * FROM student WHERE firstname LIKE %s OR lastname LIKE %s OR id LIKE %s OR course LIKE %s OR year LIKE %s OR gender LIKE %s", 
+                           ('%' + query + '%', '%' + query + '%', '%' + query + '%', '%' + query + '%', '%' + query + '%', '%' + query + '%'))
+            results = cursor.fetchall()
+            return render_template('partials/student_results.html', students=results)  # Return partial template
+
+        elif category == 'programs':
+            cursor.execute("SELECT * FROM program WHERE code LIKE %s OR name LIKE %s OR college_code LIKE %s", 
+                           ('%' + query + '%', '%' + query + '%', '%' + query + '%'))
+            results = cursor.fetchall()
+            return render_template('partials/program_results.html', programs=results)  # Return partial template
+
+        elif category == 'colleges':
+            cursor.execute("SELECT * FROM college WHERE code LIKE %s OR name LIKE %s", 
+                           ('%' + query + '%', '%' + query + '%'))
+            results = cursor.fetchall()
+            return render_template('partials/college_results.html', colleges=results)  # Return partial template
+
+    except mysql.connector.Error as err:
+        return f"Database error: {err}", 500
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return '', 204
