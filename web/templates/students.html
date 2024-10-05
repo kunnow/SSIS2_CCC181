@@ -13,10 +13,36 @@
     {% block content %}
 
     <h3 id="studListTitle" align="center">List of Students</h3>
+    <form method="POST" action="{{ url_for('views.search_student') }}">
+        <div class="search-bar">
+            <div class="dropdown">
+                <div id="drop-text" class="dropdown-text">
+                    <span id="span">All Fields</span>
+                    <i id="icon" class="bi bi-chevron-down"></i>
+                </div>
+                <ul id="list" class="dropdown-list">
+                    <li class="dropdown-list-item" data-field="all">All Fields</li>
+                    <li class="dropdown-list-item" data-field="Student I.D.">Student I.D.</li>
+                    <li class="dropdown-list-item" data-field="First Name">First Name</li>
+                    <li class="dropdown-list-item" data-field="Last Name">Last Name</li>
+                    <li class="dropdown-list-item" data-field="Year">Year</li>
+                    <li class="dropdown-list-item" data-field="Gender">Gender</li>
+                    <li class="dropdown-list-item" data-field="Course">Course</li>
+                </ul>
+                <input type="hidden" id="search-field" name="search_field" value="all">
+            </div>
+            <div class="search-line">
+                <input type="text" id="search-input" name="search_query" placeholder="Search here...">
+                <button type="submit" class="search-btn">
+                    <i class="bi bi-search"></i>
+            </div>
+        </div>
+    </form>
+    
     <table id="studentTable" class="table">
         <thead>
             <tr>
-                <th>Student  ID</th>
+                <th>Student ID</th>
                 <th>First Name</th>
                 <th>Last Name</th>
                 <th>Year</th>
@@ -26,36 +52,41 @@
             </tr>
         </thead>
         <tbody>
-            {% for student in students %}
-            <tr>
-                <td>{{ student.id }}</td>
-                <td>{{ student.firstname }}</td>
-                <td>{{ student.lastname }}</td>
-                <td>{{ student.year }}</td>
-                <td>{{ student.gender }}</td>
-                <td>{{ student.course }}</td>
-                <td>
-                    <form style="display:inline;">
-                        <button type="button" 
-                                onclick="updateStudent('{{student.id}}', 
-                                                       '{{student.firstname}}', 
-                                                       '{{student.lastname}}', 
-                                                       '{{student.year}}', 
-                                                       '{{student.gender}}', 
-                                                       '{{student.course}}')" 
-                                class="btn btn-warning btn-sm">
-                            Edit
-                        </button>
-                    </form>          
-                    <form action="{{ url_for('views.delete_student', student_id=student.id) }}" method="POST" style="display:inline;">
-                        <button type="submit" onclick="return confirm('Are you sure you want to delete this student?');" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
+            {% if students %}
+                {% for student in students %}
+                    <tr>
+                        <td>{{ student.id }}</td>
+                        <td>{{ student.firstname }}</td>
+                        <td>{{ student.lastname }}</td>
+                        <td>{{ student.year }}</td>
+                        <td>{{ student.gender }}</td>
+                        <td>{{ student.course }}</td>
+                        <td>
+                            <form style="display:inline;">
+                                <button type="button" 
+                                        onclick="updateStudent('{{student.id}}', 
+                                                               '{{student.firstname}}', 
+                                                               '{{student.lastname}}', 
+                                                               '{{student.year}}', 
+                                                               '{{student.gender}}', 
+                                                               '{{student.course}}')" 
+                                        class="btn btn-warning btn-sm">
+                                    Edit
+                                </button>
+                            </form>          
+                            <form action="{{ url_for('views.delete_student', student_id=student.id) }}" method="POST" style="display:inline;">
+                                <button type="submit" onclick="return confirm('Are you sure you want to delete this student?');" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7">No students found.</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
-    <br/>
    
     <button id="showFormBtn" class="btn btn-success" onclick="showForm()">Add New Student</button>
     <form id="studentForm" method="POST" action="/students" style="display: none; margin-top: 20px;">
@@ -102,6 +133,8 @@
         <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
     </form>
 
+    {% endblock %}
+
     <script>
     function showForm() {
         document.getElementById("studentForm").style.display = "block";  
@@ -140,7 +173,6 @@
         console.log(id, firstname, lastname, year, gender, course);  
     }
 
-    //new
     function confirmDelete(studentId) {
         if (confirm("Are you sure you want to delete this student?")) {
             const form = document.createElement("form");
@@ -150,8 +182,44 @@
             form.submit();
         }
     }
-    </script>
 
-    {% endblock %}
+    document.addEventListener("DOMContentLoaded", function() {
+        let dropdownBtnText = document.getElementById("drop-text");
+        let list = document.getElementById("list");
+        let icon = document.getElementById("icon");
+        let span = document.getElementById("span");
+        let searchFieldInput = document.getElementById("search-field");
+        let listItems = document.querySelectorAll(".dropdown-list-item");
+
+        for (let item of listItems) {
+            item.onclick = function(e) {
+                let selectedField = e.target.getAttribute("data-field");
+                searchFieldInput.value = selectedField; 
+                span.innerText = e.target.innerText; 
+                list.classList.remove("show"); 
+                icon.style.rotate = "0deg"; 
+            };
+        }
+
+        // nganong di mo ganaaaa
+        dropdownBtnText.onclick = function() {
+            console.log("Dropdown clicked!"); 
+            list.classList.toggle("show");
+            icon.style.rotate = list.classList.contains("show") ? "-180deg" : "0deg";
+        };
+
+        window.onclick = function(e) {
+            if (
+                e.target.id !== "drop-text" && 
+                e.target.id !== "span" &&
+                e.target.id !== "icon"
+            ) {
+                list.classList.remove("show");
+                icon.style.rotate = "0deg"; 
+            }
+        };
+    });
+
+    </script>
 </body>
 </html>

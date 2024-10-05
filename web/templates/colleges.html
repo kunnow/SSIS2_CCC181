@@ -13,6 +13,25 @@
     {% block content %}
 
     <h3 id="collegeListTitle" align="center">List of Colleges</h3>
+    
+    <div class="search-bar">
+        <div class="dropdown">
+            <div id="drop-text" class="dropdown-text">
+                <span id="span">All Fields</span>
+                <i id="icon" class="bi bi-chevron-down"></i>
+            </div>
+            <ul id="list" class="dropdown-list">
+                <li class="dropdown-list-item">All Fields</li>
+                <li class="dropdown-list-item">College Code</li>
+                <li class="dropdown-list-item">College Name</li>
+            </ul>
+        </div>
+        <div class="search-line">
+            <input type="text" id="search-input" placeholder="Search here...">
+            <i class="bi bi-search"></i>
+        </div>
+    </div>
+    
     <table id="collegeTable" class="table">
         <thead>
             <tr>
@@ -103,6 +122,47 @@
             document.getElementById("collegeTable").style.display = "table";
             document.getElementById("collegeListTitle").style.display = "block";
             document.getElementById("showCollegeFormBtn").style.display = "block";
+        } 
+    </script>
+
+    <script>
+        let dropdownBtnText = document.getElementById("drop-text");
+        let list = document.getElementById("list");
+        let icon = document.getElementById("icon");
+        let span = document.getElementById("span");
+        let input = document.getElementById("search-input");
+        let listItems = document.querySelectorAll(".dropdown-list-item");
+
+        // i show diri ang dropdown list on click dropdown button
+        dropdownBtnText.onclick = function(){
+            if(list.classList.contains("show")){
+                icon.style.rotate = "-0deg";
+            }else
+                icon.style.rotate = "-180deg";
+            list.classList.toggle("show");
+        };
+
+        window.onclick = function(e){
+            if(
+                e.target.id !== "drop-text" && 
+                e.target.id !== "span" &&
+                e.target.id !== "icon"
+            ){
+                list.classList.remove("show");
+                icon.style.rotate = "0deg";
+            }
+        };
+
+        for(item of listItems){
+            item.onclick = function(e){
+                span.innerText = e.target.innerText;
+                
+                if(e.target.innerText == "All Fields"){
+                    input.placeholder = "Search here...";
+                }else{
+                    input.placeholder = "Search in " + e.target.innerText + "...";
+                }
+            };
         }
     </script>
 
