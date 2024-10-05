@@ -21,23 +21,22 @@
                     <i id="icon" class="bi bi-chevron-down"></i>
                 </div>
                 <ul id="list" class="dropdown-list">
-                    <li class="dropdown-list-item" data-field="all">All Fields</li>
-                    <li class="dropdown-list-item" data-field="Student I.D.">Student I.D.</li>
+                    <li class="dropdown-list-item" data-field="All Fields">All Fields</li>
                     <li class="dropdown-list-item" data-field="First Name">First Name</li>
                     <li class="dropdown-list-item" data-field="Last Name">Last Name</li>
-                    <li class="dropdown-list-item" data-field="Year">Year</li>
+                    <li class="dropdown-list-item" data-field="Year Level">Year Level</li>
                     <li class="dropdown-list-item" data-field="Gender">Gender</li>
-                    <li class="dropdown-list-item" data-field="Course">Course</li>
-                </ul>
+                    <li class="dropdown-list-item" data-field="COurse">Course</li>
                 <input type="hidden" id="search-field" name="search_field" value="all">
             </div>
             <div class="search-line">
                 <input type="text" id="search-input" name="search_query" placeholder="Search here...">
                 <button type="submit" class="search-btn">
                     <i class="bi bi-search"></i>
+                </button>
             </div>
         </div>
-    </form>
+    </form>   
     
     <table id="studentTable" class="table">
         <thead>
@@ -133,8 +132,6 @@
         <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
     </form>
 
-    {% endblock %}
-
     <script>
     function showForm() {
         document.getElementById("studentForm").style.display = "block";  
@@ -182,44 +179,51 @@
             form.submit();
         }
     }
-
-    document.addEventListener("DOMContentLoaded", function() {
+    </script>
+    <script>
         let dropdownBtnText = document.getElementById("drop-text");
         let list = document.getElementById("list");
         let icon = document.getElementById("icon");
         let span = document.getElementById("span");
-        let searchFieldInput = document.getElementById("search-field");
+        let input = document.getElementById("search-input");
         let listItems = document.querySelectorAll(".dropdown-list-item");
-
-        for (let item of listItems) {
-            item.onclick = function(e) {
-                let selectedField = e.target.getAttribute("data-field");
-                searchFieldInput.value = selectedField; 
-                span.innerText = e.target.innerText; 
-                list.classList.remove("show"); 
-                icon.style.rotate = "0deg"; 
-            };
-        }
-
-        // nganong di mo ganaaaa
-        dropdownBtnText.onclick = function() {
-            console.log("Dropdown clicked!"); 
+        let searchFieldInput = document.getElementById("search-field");
+    
+        dropdownBtnText.onclick = function(){
+            if (list.classList.contains("show")) {
+                icon.style.transform = "rotate(0deg)";
+            } else {
+                icon.style.transform = "rotate(-180deg)";
+            }
             list.classList.toggle("show");
-            icon.style.rotate = list.classList.contains("show") ? "-180deg" : "0deg";
         };
-
+    
         window.onclick = function(e) {
-            if (
-                e.target.id !== "drop-text" && 
-                e.target.id !== "span" &&
-                e.target.id !== "icon"
-            ) {
+            if (!dropdownBtnText.contains(e.target)) {
                 list.classList.remove("show");
-                icon.style.rotate = "0deg"; 
+                icon.style.transform = "rotate(0deg)";
             }
         };
-    });
-
+    
+        for (let item of listItems) {
+            item.onclick = function(e) {
+                let selectedField = e.target.getAttribute('data-field');
+                span.innerText = selectedField;
+    
+                searchFieldInput.value = selectedField;
+    
+                if (selectedField === "All Fields") {
+                    input.placeholder = "Search here...";
+                } else {
+                    input.placeholder = "Search in " + selectedField + "...";
+                }
+    
+                list.classList.remove("show");
+                icon.style.transform = "rotate(0deg)";
+            };
+        }
     </script>
+    
+        {% endblock %}
 </body>
 </html>

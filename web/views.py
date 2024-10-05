@@ -287,7 +287,7 @@ def search_student():
     field = request.form.get('search_field')
 
     if not query:
-        return render_template('students.html', students=[])
+        return redirect(url_for('views.students')) 
 
     try:
         connection = mysql.connector.connect(
@@ -318,7 +318,7 @@ def search_student():
         elif field == "Last Name":
             sql_query = "SELECT * FROM student WHERE LOWER(lastname) LIKE %s"
             params = ('%' + query.lower() + '%',)
-        elif field == "Year":
+        elif field == "Year Level":
             sql_query = "SELECT * FROM student WHERE year = %s"
             params = (query,)  
         elif field == "Gender":
@@ -342,3 +342,99 @@ def search_student():
         connection.close()
 
     return render_template('students.html', students=students)
+
+@views.route('/search_program', methods=['GET', 'POST'])
+def search_program():
+    query = request.form.get('search_query')
+    field = request.form.get('search_field')
+
+    if not query:
+        return redirect(url_for('views.programs')) 
+
+    try:
+        connection = mysql.connector.connect(
+            host=current_app.config['MYSQL_HOST'],
+            user=current_app.config['MYSQL_USER'],
+            password=current_app.config['MYSQL_PASSWORD'],
+            database=current_app.config['MYSQL_DB']
+        )
+        cursor = connection.cursor(dictionary=True)
+
+        sql_query = """
+            SELECT * FROM program 
+            WHERE LOWER(code) LIKE %s 
+            OR LOWER(name) LIKE %s
+            OR LOWER(college_code) LIKE %s
+        """
+        params = ('%' + query.lower() + '%',) * 3 
+
+        if field == "Course Code":
+            sql_query = "SELECT * FROM program WHERE LOWER(code) LIKE %s"
+            params = ('%' + query.lower() + '%',)
+        elif field == "Course Name":
+            sql_query = "SELECT * FROM program WHERE LOWER(name) LIKE %s"
+            params = ('%' + query.lower() + '%',)
+        elif field == "College Code":
+            sql_query = "SELECT * FROM program WHERE LOWER(college_code) LIKE %s"
+            params = ('%' + query.lower() + '%',)
+
+        print(f"Executing query: {sql_query} with params: {params}")
+
+        cursor.execute(sql_query, params)
+        programs = cursor.fetchall()
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        programs = []  
+    
+    finally:
+        cursor.close()
+        connection.close()
+
+    return render_template('programs.html', programs=programs)
+
+@views.route('/search_college', methods=['GET', 'POST'])
+def search_college():
+    query = request.form.get('search_query')
+    field = request.form.get('search_field')
+
+    if not query:
+        return redirect(url_for('views.colleges')) 
+
+    try:
+        connection = mysql.connector.connect(
+            host=current_app.config['MYSQL_HOST'],
+            user=current_app.config['MYSQL_USER'],
+            password=current_app.config['MYSQL_PASSWORD'],
+            database=current_app.config['MYSQL_DB']
+        )
+        cursor = connection.cursor(dictionary=True)
+
+        sql_query = """
+            SELECT * FROM college 
+            WHERE LOWER(code) LIKE %s 
+            OR LOWER(name) LIKE %s 
+        """
+        params = ('%' + query.lower() + '%',) * 2  
+
+        if field == "College Code":
+            sql_query = "SELECT * FROM college WHERE LOWER(code) LIKE %s"
+            params = ('%' + query.lower() + '%',)
+        elif field == "College Name":
+            sql_query = "SELECT * FROM college WHERE LOWER(name) LIKE %s"
+            params = ('%' + query.lower() + '%',)
+
+        print(f"Executing query: {sql_query} with params: {params}")
+
+        cursor.execute(sql_query, params)
+        colleges = cursor.fetchall()
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        colleges = []  
+    
+    finally:
+        cursor.close()
+        connection.close()
+
+    return render_template('colleges.html', colleges=colleges)

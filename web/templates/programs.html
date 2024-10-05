@@ -1,8 +1,42 @@
-{% extends "base.html" %}
+{% extends 'home.html' %}
 
-{% block content %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <title>SSIS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    {% block content %}
 
-<h3 id="progListTitle" align="center">List of Programs</h3>
+    <h3 id="collegeListTitle" align="center">List of Programs</h3>
+    
+    <form method="POST" action="{{ url_for('views.search_program') }}">
+        <div class="search-bar">
+            <div class="dropdown">
+                <div id="drop-text" class="dropdown-text">
+                    <span id="span">All Fields</span>
+                    <i id="icon" class="bi bi-chevron-down"></i>
+                </div>
+                <ul id="list" class="dropdown-list">
+                    <li class="dropdown-list-item" data-field="All Fields">All Fields</li>
+                    <li class="dropdown-list-item" data-field="Course Code">Course Code</li>
+                    <li class="dropdown-list-item" data-field="Course Name">Course Name</li>
+                    <li class="dropdown-list-item" data-field="College Code">College Code</li>
+                <input type="hidden" id="search-field" name="search_field" value="all">
+            </div>
+            <div class="search-line">
+                <input type="text" id="search-input" name="search_query" placeholder="Search here...">
+                <button type="submit" class="search-btn">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+    </form>     
+
 <table id="programTable" class="table">
     <thead>
         <tr>
@@ -13,6 +47,7 @@
         </tr>
     </thead>
     <tbody>
+        {% if programs %}
         {% for program in programs %}
         <tr>
             <td>{{ program.code }}</td>
@@ -28,6 +63,11 @@
             </td>
         </tr>
         {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="7">No programs found.</td>
+            </tr>
+        {% endif %}
     </tbody>
 </table>
 
@@ -94,5 +134,49 @@
         document.getElementById("courseCode").readOnly = false;  
     }
 </script>
+<script>
+    let dropdownBtnText = document.getElementById("drop-text");
+    let list = document.getElementById("list");
+    let icon = document.getElementById("icon");
+    let span = document.getElementById("span");
+    let input = document.getElementById("search-input");
+    let listItems = document.querySelectorAll(".dropdown-list-item");
+    let searchFieldInput = document.getElementById("search-field");
 
+    dropdownBtnText.onclick = function(){
+        if (list.classList.contains("show")) {
+            icon.style.transform = "rotate(0deg)";
+        } else {
+            icon.style.transform = "rotate(-180deg)";
+        }
+        list.classList.toggle("show");
+    };
+
+    window.onclick = function(e) {
+        if (!dropdownBtnText.contains(e.target)) {
+            list.classList.remove("show");
+            icon.style.transform = "rotate(0deg)";
+        }
+    };
+
+    for (let item of listItems) {
+        item.onclick = function(e) {
+            let selectedField = e.target.getAttribute('data-field');
+            span.innerText = selectedField;
+
+            searchFieldInput.value = selectedField;
+
+            if (selectedField === "All Fields") {
+                input.placeholder = "Search here...";
+            } else {
+                input.placeholder = "Search in " + selectedField + "...";
+            }
+
+            list.classList.remove("show");
+            icon.style.transform = "rotate(0deg)";
+        };
+    }
+</script>
 {% endblock %}
+</body>
+</html>

@@ -14,23 +14,27 @@
 
     <h3 id="collegeListTitle" align="center">List of Colleges</h3>
     
-    <div class="search-bar">
-        <div class="dropdown">
-            <div id="drop-text" class="dropdown-text">
-                <span id="span">All Fields</span>
-                <i id="icon" class="bi bi-chevron-down"></i>
+    <form method="POST" action="{{ url_for('views.search_college') }}">
+        <div class="search-bar">
+            <div class="dropdown">
+                <div id="drop-text" class="dropdown-text">
+                    <span id="span">All Fields</span>
+                    <i id="icon" class="bi bi-chevron-down"></i>
+                </div>
+                <ul id="list" class="dropdown-list">
+                    <li class="dropdown-list-item" data-field="All Fields">All Fields</li>
+                    <li class="dropdown-list-item" data-field="College Code">College Code</li>
+                    <li class="dropdown-list-item" data-field="college Name">College Name</li>
+                <input type="hidden" id="search-field" name="search_field" value="all">
             </div>
-            <ul id="list" class="dropdown-list">
-                <li class="dropdown-list-item">All Fields</li>
-                <li class="dropdown-list-item">College Code</li>
-                <li class="dropdown-list-item">College Name</li>
-            </ul>
+            <div class="search-line">
+                <input type="text" id="search-input" name="search_query" placeholder="Search here...">
+                <button type="submit" class="search-btn">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
         </div>
-        <div class="search-line">
-            <input type="text" id="search-input" placeholder="Search here...">
-            <i class="bi bi-search"></i>
-        </div>
-    </div>
+    </form>    
     
     <table id="collegeTable" class="table">
         <thead>
@@ -41,6 +45,7 @@
             </tr>
         </thead>
         <tbody>
+            {% if colleges %}
             {% for college in colleges %}
             <tr>
                 <td>{{ college.code }}</td>
@@ -63,6 +68,11 @@
                 </td>     
             </tr>
             {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7">No students found.</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
     <br/>
@@ -132,36 +142,39 @@
         let span = document.getElementById("span");
         let input = document.getElementById("search-input");
         let listItems = document.querySelectorAll(".dropdown-list-item");
+        let searchFieldInput = document.getElementById("search-field");
 
-        // i show diri ang dropdown list on click dropdown button
         dropdownBtnText.onclick = function(){
-            if(list.classList.contains("show")){
-                icon.style.rotate = "-0deg";
-            }else
-                icon.style.rotate = "-180deg";
+            if (list.classList.contains("show")) {
+                icon.style.transform = "rotate(0deg)";
+            } else {
+                icon.style.transform = "rotate(-180deg)";
+            }
             list.classList.toggle("show");
         };
 
-        window.onclick = function(e){
-            if(
-                e.target.id !== "drop-text" && 
-                e.target.id !== "span" &&
-                e.target.id !== "icon"
-            ){
+        window.onclick = function(e) {
+            if (!dropdownBtnText.contains(e.target)) {
                 list.classList.remove("show");
-                icon.style.rotate = "0deg";
+                icon.style.transform = "rotate(0deg)";
             }
         };
 
-        for(item of listItems){
-            item.onclick = function(e){
-                span.innerText = e.target.innerText;
-                
-                if(e.target.innerText == "All Fields"){
+        for (let item of listItems) {
+            item.onclick = function(e) {
+                let selectedField = e.target.getAttribute('data-field');
+                span.innerText = selectedField;
+
+                searchFieldInput.value = selectedField;
+
+                if (selectedField === "All Fields") {
                     input.placeholder = "Search here...";
-                }else{
-                    input.placeholder = "Search in " + e.target.innerText + "...";
+                } else {
+                    input.placeholder = "Search in " + selectedField + "...";
                 }
+
+                list.classList.remove("show");
+                icon.style.transform = "rotate(0deg)";
             };
         }
     </script>
