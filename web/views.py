@@ -38,13 +38,9 @@ def students():
                 cursor.execute("SELECT * FROM student WHERE id = %s", (student_id,))
                 existing_student = cursor.fetchone()
 
-                if existing_student:  
-                    query = """UPDATE student 
-                               SET firstname = %s, lastname = %s, year = %s, gender = %s, course = %s 
-                               WHERE id = %s"""
-                    cursor.execute(query, (firstName, lastName, yearLevel, gender, course, student_id))
-                    flash('Student updated successfully.', category='success')
-                else: 
+                if existing_student:
+                    flash('Student ID already exists. Please use a different ID.', category='error')
+                else:
                     query = """INSERT INTO student (id, firstname, lastname, year, gender, course) 
                                VALUES (%s, %s, %s, %s, %s, %s)"""
                     cursor.execute(query, (student_id, firstName, lastName, yearLevel, gender, course))
@@ -80,6 +76,7 @@ def students():
 
     return render_template('students.html', students=students)
 
+#rawr done
 @views.route('/students/delete/<student_id>', methods=['POST'])
 def delete_student(student_id):
     try:
@@ -121,36 +118,43 @@ def programs():
             course_code = request.form.get('courseCode')
             course_name = request.form.get('courseName')
             college_code = request.form.get('collegeCode')
-            original_course_code = request.form.get('originalCourseCode')  
+            original_course_code = request.form.get('originalCourseCode')
 
             if len(course_code) == 0 or len(course_name) == 0 or len(college_code) == 0:
                 flash('All fields are required.', category='error')
             else:
-                if action == 'add':
-                    try:
-                        query = "INSERT INTO program (code, name, college_code) VALUES (%s, %s, %s)"
-                        cursor.execute(query, (course_code, course_name, college_code))
-                        connection.commit()
-                        flash('Program added successfully!', category='success')
-                    except mysql.connector.Error as err:
-                        flash(f"Error adding program: {err}", category='error')
+                query = "SELECT COUNT(*) FROM college WHERE code = %s"
+                cursor.execute(query, (college_code,))
+                college_exists = cursor.fetchone()['COUNT(*)'] > 0
 
-                elif action == 'edit':
-                    try:
-                        query = "SELECT COUNT(*) FROM program WHERE code = %s AND code != %s"
-                        cursor.execute(query, (course_code, original_course_code))
-                        count = cursor.fetchone()['COUNT(*)']
-
-                        if count > 0:
-                            flash('Course code must be unique.', category='error')
-                        else:
-                            query = "UPDATE program SET code = %s, name = %s, college_code = %s WHERE code = %s"
-                            cursor.execute(query, (course_code, course_name, college_code, original_course_code))
+                if not college_exists:
+                    flash('The College Code does not exist.', category='error')
+                else:
+                    if action == 'add':
+                        try:
+                            query = "INSERT INTO program (code, name, college_code) VALUES (%s, %s, %s)"
+                            cursor.execute(query, (course_code, course_name, college_code))
                             connection.commit()
-                            flash('Program updated successfully!', category='success')
+                            flash('Program added successfully!', category='success')
+                        except mysql.connector.Error as err:
+                            flash(f"Error adding program: {err}", category='error')
 
-                    except mysql.connector.Error as err:
-                        flash(f"Error updating program: {err}", category='error')
+                    elif action == 'edit':
+                        try:
+                            query = "SELECT COUNT(*) FROM program WHERE code = %s AND code != %s"
+                            cursor.execute(query, (course_code, original_course_code))
+                            count = cursor.fetchone()['COUNT(*)']
+
+                            if count > 0:
+                                flash('Course code must be unique.', category='error')
+                            else:
+                                query = "UPDATE program SET code = %s, name = %s, college_code = %s WHERE code = %s"
+                                cursor.execute(query, (course_code, course_name, college_code, original_course_code))
+                                connection.commit()
+                                flash('Program updated successfully!', category='success')
+
+                        except mysql.connector.Error as err:
+                            flash(f"Error updating program: {err}", category='error')
 
         cursor.execute("SELECT * FROM program")
         programs = cursor.fetchall()
@@ -165,7 +169,7 @@ def programs():
 
     return render_template('programs.html', programs=programs)
 
-
+#done grr
 @views.route('/programs/delete/<course_code>', methods=['POST'])
 def delete_program(course_code):
     try:
@@ -216,10 +220,18 @@ def colleges():
             else:
                 if action == 'add':
                     try:
-                        query = "INSERT INTO college (code, name) VALUES (%s, %s)"
-                        cursor.execute(query, (college_code, college_name))
-                        connection.commit()
-                        flash('College added successfully!', category='success')
+                        query = "SELECT COUNT(*) FROM college WHERE code = %s"
+                        cursor.execute(query, (college_code,))
+                        count = cursor.fetchone()['COUNT(*)']
+
+                        if count > 0:
+                            flash('College code already exists. Please choose a different code.', category='error')
+                        else:
+                            query = "INSERT INTO college (code, name) VALUES (%s, %s)"
+                            cursor.execute(query, (college_code, college_name))
+                            connection.commit()
+                            flash('College added successfully!', category='success')
+
                     except mysql.connector.Error as err:
                         flash(f"Error: {err}", category='error')
 
@@ -236,6 +248,7 @@ def colleges():
                             cursor.execute(query, (college_code, college_name, original_college_code))
                             connection.commit()
                             flash('College updated successfully!', category='success')
+
                     except mysql.connector.Error as err:
                         flash(f"Error updating college: {err}", category='error')
 

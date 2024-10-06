@@ -11,6 +11,18 @@
 </head>
 <body>
     {% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
     <h3 id="collegeListTitle" align="center">List of Programs</h3>
     
@@ -58,7 +70,7 @@
                                                                             '{{ program.name }}', 
                                                                             '{{ program.college_code }}')">Edit</button>
                 <form action="{{ url_for('views.delete_program', course_code=program.code) }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');">Delete</button>
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this program??');">Delete</button>
                 </form>
             </td>
         </tr>
@@ -79,17 +91,17 @@
 
     <div class="form-group">
         <label for="courseCode">Course Code</label>
-        <input type="text" class="form-control" id="courseCode" name="courseCode" placeholder="Enter Course Code" required />
+        <input type="text" class="form-control" id="courseCode" name="courseCode" placeholder="e.g. BSCS" required />
     </div>
 
     <div class="form-group">
         <label for="courseName">Course Name</label>
-        <input type="text" class="form-control" id="courseName" name="courseName" placeholder="Enter Course Name" required />
+        <input type="text" class="form-control" id="courseName" name="courseName" placeholder="e.g. Bachelor of Science in Computer Science" required />
     </div>
 
     <div class="form-group">
         <label for="collegeCode">College Code</label>
-        <input type="text" class="form-control" id="collegeCode" name="collegeCode" placeholder="Enter College Code" required />
+        <input type="text" class="form-control" id="collegeCode" name="collegeCode" placeholder="e.g. CCS" required />
     </div>
 
     <input type="hidden" id="originalCourseCode" name="originalCourseCode" />
@@ -110,18 +122,19 @@
         document.getElementById("progListTitle").style.display = "none";
     }
 
-    function editProgram(code, name, collegeCode) {
+    function editProgram(code, name, collegeCode) 
+    {
         document.getElementById("programForm").style.display = "block";  
         document.getElementById("programTable").style.display = "none";
         document.getElementById("showFormBtn").style.display = "none";
-        document.getElementById("progListTitle").style.display = "none";
 
         document.getElementById("courseCode").value = code;
-        document.getElementById("courseCode").readOnly = false;  
+        document.getElementById("courseCode").readOnly = true;  
         document.getElementById("courseName").value = name;
         document.getElementById("collegeCode").value = collegeCode;
 
         document.getElementById("formTitle").innerText = "Edit Program"; 
+
         document.getElementById("action").value = "edit"; 
         document.getElementById("originalCourseCode").value = code; 
     }
@@ -133,6 +146,7 @@
         document.getElementById("showFormBtn").style.display = "block";  
         document.getElementById("courseCode").readOnly = false;  
     }
+    
 </script>
 <script>
     let dropdownBtnText = document.getElementById("drop-text");
@@ -177,6 +191,7 @@
         };
     }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
 </body>
 </html>

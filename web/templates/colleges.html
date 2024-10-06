@@ -12,6 +12,19 @@
 <body>
     {% block content %}
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <h3 id="collegeListTitle" align="center">List of Colleges</h3>
     
     <form method="POST" action="{{ url_for('views.search_college') }}">
@@ -82,16 +95,16 @@
         <input type="hidden" id="operation" name="action" value=""/>
         <input type="hidden" id="edit_code" name="originalCollegeCode" value="" />
 
-        <h3 align="center" id="formTitle">New College</h3>
+        <h3 align="center" id="formTitle">Add New College</h3>
 
         <div class="form-group">
             <label for="college_code">College Code</label>
-            <input type="text" class="form-control" id="college_code" name="code" placeholder="CCS" required />
+            <input type="text" class="form-control" id="college_code" name="code" placeholder="e.g. CCS" required />
         </div>
 
         <div class="form-group">
             <label for="college_name">College Name</label>
-            <input type="text" class="form-control" id="college_name" name="name" placeholder="College of Computer" required />
+            <input type="text" class="form-control" id="college_name" name="name" placeholder="e.g. College of Computer Studies" required />
         </div>
 
         <br/>
@@ -178,6 +191,7 @@
             };
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     {% endblock %}
 </body>
