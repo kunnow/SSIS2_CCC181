@@ -1,73 +1,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 import mysql.connector
-import cloudinary
 import cloudinary.uploader
 
 views = Blueprint('views', __name__)
-
-cloudinary.config(
-    cloud_name = "dg8ofwmtu",
-    api_key = "596471217998654",
-    api_secret = "wHG8wuEhqhvEKe4E1m2kIm5lJ4s",
-    secure = True
-    )
-
-@views.route('/studentphoto', methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        file = request.files.get('file')  # Get the uploaded file
-        
-        if file:
-            try:
-                # Upload to Cloudinary
-                response = cloudinary.uploader.upload(
-                    file,
-                    upload_preset="python",
-                    unique_filename=True,
-                    overwrite=True,
-                    eager=[{"width": 500, "crop": "fill"}]
-                )
-
-                image_url = response['eager'][0]['secure_url']  # Get the secure URL for the image
-                tags = response.get('info', {}).get('categorization', {}).get('aws_rek_tagging', {}).get('data', [])[:3]
-                
-                # Update student record in the database with the new image URL
-                # Assuming 'student_id' is available for updating the right record
-                # update_student_photo(student_id, image_url)
-
-                flash("Photo uploaded successfully!", "success")
-                return render_template('index.html', image_url=image_url, tags=tags)
-
-            except Exception as e:
-                flash(f"An error occurred: {str(e)}", "danger")
-                return redirect(url_for('upload_file'))
-    
-    return render_template('students.html')
-
-@views.route('/studentphoto_delete', methods=['POST'])
-def delete_image():
-    if request.method == 'POST':
-        image_url = request.form.get('image_url')  # Get image URL from the form
-
-        if image_url:
-            try:
-                # Extract the public_id from the image URL
-                public_id = "/".join(image_url.split('/')[-2:]).split('.')[0]
-                
-                # Delete the image from Cloudinary
-                result = cloudinary.uploader.destroy(public_id)
-                
-                if result['result'] == 'ok':
-                    # Optionally, remove the photo URL from the student's record in the database
-                    # update_student_photo(student_id, None)
-
-                    flash("Photo deleted successfully!", "success")
-                else:
-                    flash("Error deleting the photo.", "danger")
-            except Exception as e:
-                flash(f"An error occurred: {str(e)}", "danger")
-    
-    return redirect(url_for('upload_file'))
 
 @views.route("/")
 def sidebar():
@@ -78,12 +13,14 @@ def students():
     students = []
 
     if request.method == 'POST':
+        image = request.files.get('image')  # Get image from form
         student_id = request.form.get('id')
         firstName = request.form.get('firstname')
         lastName = request.form.get('lastname')
         yearLevel = request.form.get('year')
         gender = request.form.get('gender')
         course = request.form.get('course')
+        action = request.form.get('action')  # Get the action (add or edit)
 
         if len(firstName) == 0:
             flash('Invalid first name.', category='danger')
@@ -101,30 +38,40 @@ def students():
                 )
                 cursor = connection.cursor()
 
-                cursor.execute("SELECT * FROM student WHERE id = %s", (student_id,))
-                existing_student = cursor.fetchone()
+                # Handle Image Upload with Cloudinary
+                image_url = None
+                if image:
+                    upload_result = cloudinary.uploader.upload(image)
+                    image_url = upload_result.get("url")  # Get the uploaded image URL
 
-                if existing_student:
+                if action == "add":
+                    cursor.execute("SELECT * FROM student WHERE id = %s", (student_id,))
+                    existing_student = cursor.fetchone()
+                    if existing_student:
+                        flash('Student ID already exists. Please use a different ID.', category='danger')
+                    else:
+                        query = """INSERT INTO student (image_url, id, firstname, lastname, year, gender, course) 
+                                   VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+                        cursor.execute(query, (image_url, student_id, firstName, lastName, yearLevel, gender, course))
+                        flash('Student added successfully.', category='success')
+
+                elif action == "edit":
                     query = """UPDATE student 
-                               SET firstname = %s, lastname = %s, year = %s, gender = %s, course = %s 
+                               SET image_url = %s, firstname = %s, lastname = %s, year = %s, gender = %s, course = %s 
                                WHERE id = %s"""
-                    cursor.execute(query, (firstName, lastName, yearLevel, gender, course, student_id))
+                    cursor.execute(query, (image_url, firstName, lastName, yearLevel, gender, course, student_id))
                     flash('Student updated successfully.', category='success')
-                else:
-                    query = """INSERT INTO student (id, firstname, lastname, year, gender, course) 
-                               VALUES (%s, %s, %s, %s, %s, %s)"""
-                    cursor.execute(query, (student_id, firstName, lastName, yearLevel, gender, course))
-                    flash('Student added successfully.', category='success')
 
                 connection.commit()
 
             except mysql.connector.Error as err:
-                flash('Course does not exist!', category='danger')
+                flash(f"Error: {err}", category='danger')
 
             finally:
                 cursor.close()
                 connection.close()
 
+    # Fetch students to display in template
     try:
         connection = mysql.connector.connect(
             host=current_app.config['MYSQL_HOST'],
