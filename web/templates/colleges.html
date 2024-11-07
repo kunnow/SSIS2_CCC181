@@ -49,6 +49,7 @@
         </div>
     </form>    
     
+    <button id="showCollegeFormBtn" class="btn btn-success" onclick="showCollegeForm()">Add College</button>
     <table id="collegeTable" class="table">
         <thead>
             <tr>
@@ -90,7 +91,6 @@
     </table>
     <br/>
 
-    <button id="showCollegeFormBtn" class="btn btn-success" onclick="showCollegeForm()">Add New College</button>
     <form id="collegeForm" method="POST" action="{{ url_for('views.colleges') }}" style="display: none; margin-top: 20px;">
         <input type="hidden" id="operation" name="action" value=""/>
         <input type="hidden" id="edit_code" name="originalCollegeCode" value="" />

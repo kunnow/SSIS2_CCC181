@@ -49,6 +49,8 @@
         </div>
     </form>     
 
+    <button id="showFormBtn" class="btn btn-success" onclick="showForm()">Add Program</button>
+
 <table id="programTable" class="table">
     <thead>
         <tr>
@@ -82,9 +84,7 @@
         {% endif %}
     </tbody>
 </table>
-
 <br/>
-<button id="showFormBtn" class="btn btn-success" onclick="showForm()">Add New Program</button>
 
 <form id="programForm" method="POST" action="{{ url_for('views.programs') }}" style="display: none; margin-top: 20px;">
     <h3 align="center" id="formTitle">New Program</h3>
@@ -129,7 +129,7 @@
         document.getElementById("showFormBtn").style.display = "none";
 
         document.getElementById("courseCode").value = code;
-        document.getElementById("courseCode").readOnly = true;  
+        document.getElementById("courseCode").readOnly = false;  
         document.getElementById("courseName").value = name;
         document.getElementById("collegeCode").value = collegeCode;
 

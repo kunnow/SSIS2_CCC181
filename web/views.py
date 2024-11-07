@@ -1,7 +1,73 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 import mysql.connector
+import cloudinary
+import cloudinary.uploader
 
 views = Blueprint('views', __name__)
+
+cloudinary.config(
+    cloud_name = "dg8ofwmtu",
+    api_key = "596471217998654",
+    api_secret = "wHG8wuEhqhvEKe4E1m2kIm5lJ4s",
+    secure = True
+    )
+
+@views.route('/studentphoto', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files.get('file')  # Get the uploaded file
+        
+        if file:
+            try:
+                # Upload to Cloudinary
+                response = cloudinary.uploader.upload(
+                    file,
+                    upload_preset="python",
+                    unique_filename=True,
+                    overwrite=True,
+                    eager=[{"width": 500, "crop": "fill"}]
+                )
+
+                image_url = response['eager'][0]['secure_url']  # Get the secure URL for the image
+                tags = response.get('info', {}).get('categorization', {}).get('aws_rek_tagging', {}).get('data', [])[:3]
+                
+                # Update student record in the database with the new image URL
+                # Assuming 'student_id' is available for updating the right record
+                # update_student_photo(student_id, image_url)
+
+                flash("Photo uploaded successfully!", "success")
+                return render_template('index.html', image_url=image_url, tags=tags)
+
+            except Exception as e:
+                flash(f"An error occurred: {str(e)}", "danger")
+                return redirect(url_for('upload_file'))
+    
+    return render_template('students.html')
+
+@views.route('/studentphoto_delete', methods=['POST'])
+def delete_image():
+    if request.method == 'POST':
+        image_url = request.form.get('image_url')  # Get image URL from the form
+
+        if image_url:
+            try:
+                # Extract the public_id from the image URL
+                public_id = "/".join(image_url.split('/')[-2:]).split('.')[0]
+                
+                # Delete the image from Cloudinary
+                result = cloudinary.uploader.destroy(public_id)
+                
+                if result['result'] == 'ok':
+                    # Optionally, remove the photo URL from the student's record in the database
+                    # update_student_photo(student_id, None)
+
+                    flash("Photo deleted successfully!", "success")
+                else:
+                    flash("Error deleting the photo.", "danger")
+            except Exception as e:
+                flash(f"An error occurred: {str(e)}", "danger")
+    
+    return redirect(url_for('upload_file'))
 
 @views.route("/")
 def sidebar():
@@ -20,11 +86,11 @@ def students():
         course = request.form.get('course')
 
         if len(firstName) == 0:
-            flash('Invalid first name.', category='error')
+            flash('Invalid first name.', category='danger')
         elif len(lastName) == 0:
-            flash('Invalid last name.', category='error')
+            flash('Invalid last name.', category='danger')
         elif not yearLevel.isdigit() or int(yearLevel) not in range(1, 5):
-            flash('Invalid Year Level. Must be between 1 and 4.', category='error')
+            flash('Invalid Year Level. Must be between 1 and 4.', category='danger')
         else:
             try:
                 connection = mysql.connector.connect(
@@ -39,7 +105,11 @@ def students():
                 existing_student = cursor.fetchone()
 
                 if existing_student:
-                    flash('Student ID already exists. Please use a different ID.', category='error')
+                    query = """UPDATE student 
+                               SET firstname = %s, lastname = %s, year = %s, gender = %s, course = %s 
+                               WHERE id = %s"""
+                    cursor.execute(query, (firstName, lastName, yearLevel, gender, course, student_id))
+                    flash('Student updated successfully.', category='success')
                 else:
                     query = """INSERT INTO student (id, firstname, lastname, year, gender, course) 
                                VALUES (%s, %s, %s, %s, %s, %s)"""
@@ -49,7 +119,7 @@ def students():
                 connection.commit()
 
             except mysql.connector.Error as err:
-                flash(f"Error: {err}", category='error')
+                flash('Course does not exist!', category='danger')
 
             finally:
                 cursor.close()
@@ -67,7 +137,7 @@ def students():
         students = cursor.fetchall()
 
     except mysql.connector.Error as err:
-        flash(f"Error: {err}", category='error')
+        flash(f"Error: {err}", category='danger')
         students = []
 
     finally:
@@ -94,7 +164,7 @@ def delete_student(student_id):
         flash('Student deleted successfully.', category='success')
 
     except mysql.connector.Error as err:
-        flash(f"Error: {err}", category='error')
+        flash(f"Error: {err}", category='danger')
 
     finally:
         cursor.close()
@@ -121,14 +191,14 @@ def programs():
             original_course_code = request.form.get('originalCourseCode')
 
             if len(course_code) == 0 or len(course_name) == 0 or len(college_code) == 0:
-                flash('All fields are required.', category='error')
+                flash('All fields are required.', category='danger')
             else:
                 query = "SELECT COUNT(*) FROM college WHERE code = %s"
                 cursor.execute(query, (college_code,))
                 college_exists = cursor.fetchone()['COUNT(*)'] > 0
 
                 if not college_exists:
-                    flash('The College Code does not exist.', category='error')
+                    flash('The College Code does not exist.', category='danger')
                 else:
                     if action == 'add':
                         try:
@@ -137,7 +207,7 @@ def programs():
                             connection.commit()
                             flash('Program added successfully!', category='success')
                         except mysql.connector.Error as err:
-                            flash(f"Error adding program: {err}", category='error')
+                            flash('Program already exists. Please choose a different code.', category='danger')
 
                     elif action == 'edit':
                         try:
@@ -146,7 +216,7 @@ def programs():
                             count = cursor.fetchone()['COUNT(*)']
 
                             if count > 0:
-                                flash('Course code must be unique.', category='error')
+                                flash('Course code must be unique.', category='danger')
                             else:
                                 query = "UPDATE program SET code = %s, name = %s, college_code = %s WHERE code = %s"
                                 cursor.execute(query, (course_code, course_name, college_code, original_course_code))
@@ -154,13 +224,13 @@ def programs():
                                 flash('Program updated successfully!', category='success')
 
                         except mysql.connector.Error as err:
-                            flash(f"Error updating program: {err}", category='error')
+                            flash(f"Error updating program: {err}", category='danger')
 
         cursor.execute("SELECT * FROM program")
         programs = cursor.fetchall()
 
     except mysql.connector.Error as err:
-        flash(f"Database error: {err}", category='error')
+        flash(f"Database error: {err}", category='danger')
         programs = []
 
     finally:
@@ -187,7 +257,7 @@ def delete_program(course_code):
         flash('Program deleted successfully.', category='success')
 
     except mysql.connector.Error as err:
-        flash(f"Error deleting program: {err}", category='error')
+        flash(f"Error deleting program: {err}", category='danger')
 
     finally:
         if cursor:
@@ -216,7 +286,7 @@ def colleges():
             original_college_code = request.form.get('originalCollegeCode')
 
             if not college_code or not college_name:
-                flash('Both college code and name are required.', category='error')
+                flash('Both college code and name are required.', category='danger')
             else:
                 if action == 'add':
                     try:
@@ -225,7 +295,7 @@ def colleges():
                         count = cursor.fetchone()['COUNT(*)']
 
                         if count > 0:
-                            flash('College code already exists. Please choose a different code.', category='error')
+                            flash('College code already exists. Please choose a different code.', category='danger')
                         else:
                             query = "INSERT INTO college (code, name) VALUES (%s, %s)"
                             cursor.execute(query, (college_code, college_name))
@@ -233,7 +303,7 @@ def colleges():
                             flash('College added successfully!', category='success')
 
                     except mysql.connector.Error as err:
-                        flash(f"Error: {err}", category='error')
+                        flash(f"Error: {err}", category='danger')
 
                 elif action == 'edit':
                     try:
@@ -242,7 +312,7 @@ def colleges():
                         count = cursor.fetchone()['COUNT(*)']
 
                         if count > 0:
-                            flash('Another college with the same code already exists.', category='error')
+                            flash('Another college with the same code already exists.', category='danger')
                         else:
                             query = "UPDATE college SET code = %s, name = %s WHERE code = %s"
                             cursor.execute(query, (college_code, college_name, original_college_code))
@@ -250,13 +320,13 @@ def colleges():
                             flash('College updated successfully!', category='success')
 
                     except mysql.connector.Error as err:
-                        flash(f"Error updating college: {err}", category='error')
+                        flash(f"Error updating college: {err}", category='danger')
 
         cursor.execute("SELECT * FROM college")
         colleges = cursor.fetchall()
 
     except mysql.connector.Error as err:
-        flash(f"Error: {err}", category='error')
+        flash(f"Error: {err}", category='danger')
 
     finally:
         if cursor:
@@ -284,7 +354,7 @@ def delete_college(code):
 
     except mysql.connector.Error as err:
         connection.rollback()  
-        flash(f"Error: {err}", "error")
+        flash(f"Error: {err}", "danger")
 
     finally:
         if cursor:

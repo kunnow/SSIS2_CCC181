@@ -400,3 +400,42 @@
     font-weight: 500;
     color: var(--main-color);
 }
+
+/* for student photo */
+
+.button-wrap{
+    display: flex;
+    height: 90vh;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.button-wrap input[type="file"]{
+    display: none;
+}
+.button{
+    padding: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+    background-color: green;
+    font-size: 16px;
+}
+#file-name{
+    text-align: center;
+    width: 150px;
+    height: 20px;
+    overflow: hidden;
+}
+
+/* flash error categry */
+.flash {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.flash.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}

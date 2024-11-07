@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+    <!--start here-->
     {% extends 'home.html' %}
 
     {% block content %}
@@ -51,9 +52,11 @@
         </div>
     </form>   
     
+    <button id="showFormBtn" class="btn btn-success" onclick="showForm()">Add Student</button>
     <table id="studentTable" class="table">
         <thead>
             <tr>
+                <th>Student Photo</th>
                 <th>Student ID</th>
                 <th>First Name</th>
                 <th>Last Name</th>
@@ -67,6 +70,14 @@
             {% if students %}
                 {% for student in students %}
                     <tr>
+                        <!--<td><img src="{{ student.photo_url }}" alt="Student Photo" width="100"></td>-->
+                        <td>
+                            {% if student.photo_url %}
+                                <img src="{{ student.photo_url }}" alt="Student Photo" width="200">
+                            {% else %}
+                                <img src="/static/images/default.png" width="200">  <!-- Fallback for missing photo -->
+                            {% endif %}
+                        </td>
                         <td>{{ student.id }}</td>
                         <td>{{ student.firstname }}</td>
                         <td>{{ student.lastname }}</td>
@@ -100,9 +111,13 @@
         </tbody>
     </table>
    
-    <button id="showFormBtn" class="btn btn-success" onclick="showForm()">Add New Student</button>
-    <form id="studentForm" method="POST" action="/students" style="display: none; margin-top: 20px;">
+    <form id="studentForm" method="POST" action="/students" enctype="multipart/form-data" style="display: none; margin-top: 20px;">
         <h3 id="formTitle" align="center">New Student</h3>
+
+        <div class="form-group">
+            <label for="photo">Student Photo</label>
+            <input type="file" class="form-control" id="photo" accept="image/*">
+        </div>
 
         <div class="form-group">
             <label for="id">ID Number</label>
@@ -137,7 +152,7 @@
 
         <div class="form-group">
             <label for="program">Course Code</label>
-            <input type="text" class="form-control" id="program" name="course" placeholder="e.g. BSCS" />
+            <input type="text" class="form-control" id="program" name="course" placeholder="e.g. BSCS" required/>
         </div>
 
         <br/>
