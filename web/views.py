@@ -10,17 +10,51 @@ def sidebar():
 
 @views.route('/students', endpoint='students', methods=['GET', 'POST'])
 def students():
+    page = request.args.get('page', 1, type=int)
+    per_page = 13
+    offset = (page - 1) * per_page
+
     students = []
 
+    try:
+        connection = mysql.connector.connect(
+            host=current_app.config['MYSQL_HOST'],
+            user=current_app.config['MYSQL_USER'],
+            password=current_app.config['MYSQL_PASSWORD'],
+            database=current_app.config['MYSQL_DB']
+        )
+        cursor = connection.cursor(dictionary=True)
+        
+        cursor.execute("SELECT COUNT(*) AS total FROM student")
+        total_students = cursor.fetchone()['total']
+
+        query = """
+            SELECT id, firstname, lastname, year, gender, course
+            FROM student
+            LIMIT %s OFFSET %s
+        """
+        cursor.execute(query, (per_page, offset))
+        students = cursor.fetchall()
+
+        total_pages = (total_students + per_page - 1) // per_page
+
+    except mysql.connector.Error as err:
+        flash(f"Error: {err}", category='danger')
+        total_pages = 1
+
+    finally:
+        cursor.close()
+        connection.close()
+
     if request.method == 'POST':
-        image = request.files.get('image')  # Get image from form
+        image = request.files.get('image')
         student_id = request.form.get('id')
         firstName = request.form.get('firstname')
         lastName = request.form.get('lastname')
         yearLevel = request.form.get('year')
         gender = request.form.get('gender')
         course = request.form.get('course')
-        action = request.form.get('action')  # Get the action (add or edit)
+        action = request.form.get('action')
 
         if len(firstName) == 0:
             flash('Invalid first name.', category='danger')
@@ -38,11 +72,10 @@ def students():
                 )
                 cursor = connection.cursor()
 
-                # Handle Image Upload with Cloudinary
                 image_url = None
                 if image:
                     upload_result = cloudinary.uploader.upload(image)
-                    image_url = upload_result.get("url")  # Get the uploaded image URL
+                    image_url = upload_result.get("url")
 
                 if action == "add":
                     cursor.execute("SELECT * FROM student WHERE id = %s", (student_id,))
@@ -71,27 +104,7 @@ def students():
                 cursor.close()
                 connection.close()
 
-    # Fetch students to display in template
-    try:
-        connection = mysql.connector.connect(
-            host=current_app.config['MYSQL_HOST'],
-            user=current_app.config['MYSQL_USER'],
-            password=current_app.config['MYSQL_PASSWORD'],
-            database=current_app.config['MYSQL_DB']
-        )
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM student")
-        students = cursor.fetchall()
-
-    except mysql.connector.Error as err:
-        flash(f"Error: {err}", category='danger')
-        students = []
-
-    finally:
-        cursor.close()
-        connection.close()
-
-    return render_template('students.html', students=students)
+    return render_template('students.html', students=students,page=page,total_pages=total_pages)
 
 #rawr done
 @views.route('/students/delete/<student_id>', methods=['POST'])
@@ -121,6 +134,12 @@ def delete_student(student_id):
 
 @views.route('/programs', methods=['GET', 'POST'])
 def programs():
+    page = request.args.get('page', 1, type=int)
+    per_page = 13
+    offset = (page - 1) * per_page
+
+    programs = []
+
     try:
         connection = mysql.connector.connect(
             host=current_app.config['MYSQL_HOST'],
@@ -129,6 +148,18 @@ def programs():
             database=current_app.config['MYSQL_DB']
         )
         cursor = connection.cursor(dictionary=True)
+
+        cursor.execute("SELECT COUNT(*) AS total FROM program")
+        total_programs = cursor.fetchone()['total']
+        total_pages = (total_programs + per_page - 1) // per_page
+
+        query = """
+            SELECT code, name, college_code
+            FROM program
+            LIMIT %s OFFSET %s
+        """
+        cursor.execute(query, (per_page, offset))
+        programs = cursor.fetchall()
 
         if request.method == 'POST':
             action = request.form.get('action')
@@ -140,8 +171,7 @@ def programs():
             if len(course_code) == 0 or len(course_name) == 0 or len(college_code) == 0:
                 flash('All fields are required.', category='danger')
             else:
-                query = "SELECT COUNT(*) FROM college WHERE code = %s"
-                cursor.execute(query, (college_code,))
+                cursor.execute("SELECT COUNT(*) FROM college WHERE code = %s", (college_code,))
                 college_exists = cursor.fetchone()['COUNT(*)'] > 0
 
                 if not college_exists:
@@ -169,22 +199,25 @@ def programs():
                                 cursor.execute(query, (course_code, course_name, college_code, original_course_code))
                                 connection.commit()
                                 flash('Program updated successfully!', category='success')
-
                         except mysql.connector.Error as err:
                             flash(f"Error updating program: {err}", category='danger')
 
-        cursor.execute("SELECT * FROM program")
-        programs = cursor.fetchall()
-
     except mysql.connector.Error as err:
         flash(f"Database error: {err}", category='danger')
-        programs = []
+        total_pages = 1
 
     finally:
-        cursor.close()
-        connection.close()
+        if 'cursor' in locals():
+            cursor.close()
+        if 'connection' in locals():
+            connection.close()
 
-    return render_template('programs.html', programs=programs)
+    return render_template(
+        'programs.html',
+        programs=programs,
+        page=page,
+        total_pages=total_pages
+    )
 
 #done grr
 @views.route('/programs/delete/<course_code>', methods=['POST'])
@@ -216,6 +249,10 @@ def delete_program(course_code):
 
 @views.route('/colleges', methods=['GET', 'POST'])
 def colleges():
+    page = request.args.get('page', 1, type=int)
+    per_page = 13
+    offset = (page - 1) * per_page
+
     colleges = []
     try:
         connection = mysql.connector.connect(
@@ -269,8 +306,13 @@ def colleges():
                     except mysql.connector.Error as err:
                         flash(f"Error updating college: {err}", category='danger')
 
-        cursor.execute("SELECT * FROM college")
+        cursor.execute("SELECT COUNT(*) AS total FROM college")
+        total_colleges = cursor.fetchone()['total']
+
+        cursor.execute("SELECT code, name FROM college LIMIT %s OFFSET %s", (per_page, offset))
         colleges = cursor.fetchall()
+
+        total_pages = (total_colleges + per_page - 1) // per_page
 
     except mysql.connector.Error as err:
         flash(f"Error: {err}", category='danger')
@@ -281,7 +323,7 @@ def colleges():
         if connection:
             connection.close()
 
-    return render_template('colleges.html', colleges=colleges)
+    return render_template('colleges.html', colleges=colleges, page=page, total_pages=total_pages)
 
 @views.route('/colleges/delete/<code>', methods=['POST'])
 def delete_college(code):
@@ -313,11 +355,14 @@ def delete_college(code):
 
 @views.route('/search_student', methods=['GET', 'POST'])
 def search_student():
-    query = request.form.get('search_query')
-    field = request.form.get('search_field')
+    query = request.form.get('search_query', '').strip() or request.args.get('search_query', '').strip()
+    field = request.form.get('search_field') or request.args.get('search_field')
+    page = request.args.get('page', 1, type=int)
+    per_page = 13
+    offset = (page - 1) * per_page
 
     if not query:
-        return redirect(url_for('views.students')) 
+        return redirect(url_for('views.students'))
 
     try:
         connection = mysql.connector.connect(
@@ -336,50 +381,86 @@ def search_student():
             OR year LIKE %s 
             OR LOWER(gender) LIKE %s 
             OR LOWER(course) LIKE %s
+            LIMIT %s OFFSET %s
         """
-        params = ('%' + query.lower() + '%',) * 6  
+        params = ('%' + query.lower() + '%',) * 6 + (per_page, offset)
 
         if field == "Student I.D.":
-            sql_query = "SELECT * FROM student WHERE LOWER(id) LIKE %s"
-            params = ('%' + query.lower() + '%',)
+            sql_query = "SELECT * FROM student WHERE LOWER(id) LIKE %s LIMIT %s OFFSET %s"
+            params = ('%' + query.lower() + '%', per_page, offset)
         elif field == "First Name":
-            sql_query = "SELECT * FROM student WHERE LOWER(firstname) LIKE %s"
-            params = ('%' + query.lower() + '%',)
+            sql_query = "SELECT * FROM student WHERE LOWER(firstname) LIKE %s LIMIT %s OFFSET %s"
+            params = ('%' + query.lower() + '%', per_page, offset)
         elif field == "Last Name":
-            sql_query = "SELECT * FROM student WHERE LOWER(lastname) LIKE %s"
-            params = ('%' + query.lower() + '%',)
+            sql_query = "SELECT * FROM student WHERE LOWER(lastname) LIKE %s LIMIT %s OFFSET %s"
+            params = ('%' + query.lower() + '%', per_page, offset)
         elif field == "Year Level":
-            sql_query = "SELECT * FROM student WHERE year = %s"
-            params = (query,)  
+            sql_query = "SELECT * FROM student WHERE year = %s LIMIT %s OFFSET %s"
+            params = (query, per_page, offset)
         elif field == "Gender":
-            sql_query = "SELECT * FROM student WHERE LOWER(gender) LIKE %s"
-            params = ('%' + query.lower() + '%',)
+            sql_query = "SELECT * FROM student WHERE LOWER(gender) LIKE %s LIMIT %s OFFSET %s"
+            params = ('%' + query.lower() + '%', per_page, offset)
         elif field == "Course":
-            sql_query = "SELECT * FROM student WHERE LOWER(course) LIKE %s"
-            params = ('%' + query.lower() + '%',)
-
-        print(f"Executing query: {sql_query} with params: {params}")
+            sql_query = "SELECT * FROM student WHERE LOWER(course) LIKE %s LIMIT %s OFFSET %s"
+            params = ('%' + query.lower() + '%', per_page, offset)
 
         cursor.execute(sql_query, params)
         students = cursor.fetchall()
 
+        count_query = """
+            SELECT COUNT(*) AS total FROM student 
+            WHERE LOWER(id) LIKE %s 
+            OR LOWER(firstname) LIKE %s 
+            OR LOWER(lastname) LIKE %s 
+            OR year LIKE %s 
+            OR LOWER(gender) LIKE %s 
+            OR LOWER(course) LIKE %s
+        """
+        count_params = ('%' + query.lower() + '%',) * 6
+        if field == "Student I.D.":
+            count_query = "SELECT COUNT(*) AS total FROM student WHERE LOWER(id) LIKE %s"
+            count_params = ('%' + query.lower() + '%',)
+        elif field == "First Name":
+            count_query = "SELECT COUNT(*) AS total FROM student WHERE LOWER(firstname) LIKE %s"
+            count_params = ('%' + query.lower() + '%',)
+        elif field == "Last Name":
+            count_query = "SELECT COUNT(*) AS total FROM student WHERE LOWER(lastname) LIKE %s"
+            count_params = ('%' + query.lower() + '%',)
+        elif field == "Year Level":
+            count_query = "SELECT COUNT(*) AS total FROM student WHERE year = %s"
+            count_params = (query,)
+        elif field == "Gender":
+            count_query = "SELECT COUNT(*) AS total FROM student WHERE LOWER(gender) LIKE %s"
+            count_params = ('%' + query.lower() + '%',)
+        elif field == "Course":
+            count_query = "SELECT COUNT(*) AS total FROM student WHERE LOWER(course) LIKE %s"
+            count_params = ('%' + query.lower() + '%',)
+
+        cursor.execute(count_query, count_params)
+        total_students = cursor.fetchone()['total']
+        total_pages = (total_students + per_page - 1) // per_page
+
     except mysql.connector.Error as err:
         print(f"Error: {err}")
-        students = []  
-    
+        students = []
+        total_pages = 1
+
     finally:
         cursor.close()
         connection.close()
 
-    return render_template('students.html', students=students)
+    return render_template('students.html',students=students,page=page,total_pages=total_pages,search_query=query,search_field=field)
 
 @views.route('/search_program', methods=['GET', 'POST'])
 def search_program():
-    query = request.form.get('search_query')
-    field = request.form.get('search_field')
+    query = request.form.get('search_query') or request.args.get('search_query', '')
+    field = request.form.get('search_field') or request.args.get('search_field', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 13
+    offset = (page - 1) * per_page
 
     if not query:
-        return redirect(url_for('views.programs')) 
+        return redirect(url_for('views.programs'))
 
     try:
         connection = mysql.connector.connect(
@@ -390,14 +471,6 @@ def search_program():
         )
         cursor = connection.cursor(dictionary=True)
 
-        sql_query = """
-            SELECT * FROM program 
-            WHERE LOWER(code) LIKE %s 
-            OR LOWER(name) LIKE %s
-            OR LOWER(college_code) LIKE %s
-        """
-        params = ('%' + query.lower() + '%',) * 3 
-
         if field == "Course Code":
             sql_query = "SELECT * FROM program WHERE LOWER(code) LIKE %s"
             params = ('%' + query.lower() + '%',)
@@ -407,26 +480,42 @@ def search_program():
         elif field == "College Code":
             sql_query = "SELECT * FROM program WHERE LOWER(college_code) LIKE %s"
             params = ('%' + query.lower() + '%',)
+        else:
+            sql_query = """
+                SELECT * FROM program 
+                WHERE LOWER(code) LIKE %s 
+                OR LOWER(name) LIKE %s
+                OR LOWER(college_code) LIKE %s
+            """
+            params = ('%' + query.lower() + '%',) * 3
 
-        print(f"Executing query: {sql_query} with params: {params}")
+        cursor.execute(f"SELECT COUNT(*) AS total FROM ({sql_query}) AS total_query", params)
+        total_programs = cursor.fetchone()['total']
 
-        cursor.execute(sql_query, params)
+        sql_query += " LIMIT %s OFFSET %s"
+        cursor.execute(sql_query, params + (per_page, offset))
         programs = cursor.fetchall()
+
+        total_pages = (total_programs + per_page - 1) // per_page
 
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         programs = []  
-    
+        total_pages = 1
+
     finally:
         cursor.close()
         connection.close()
 
-    return render_template('programs.html', programs=programs)
+    return render_template('programs.html', programs=programs, page=page, total_pages=total_pages, search_query=query, search_field=field)
 
 @views.route('/search_college', methods=['GET', 'POST'])
 def search_college():
-    query = request.form.get('search_query')
-    field = request.form.get('search_field')
+    query = request.form.get('search_query') or request.args.get('search_query', '')
+    field = request.form.get('search_field') or request.args.get('search_field', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 13
+    offset = (page - 1) * per_page
 
     if not query:
         return redirect(url_for('views.colleges')) 
@@ -443,9 +532,9 @@ def search_college():
         sql_query = """
             SELECT * FROM college 
             WHERE LOWER(code) LIKE %s 
-            OR LOWER(name) LIKE %s 
+            OR LOWER(name) LIKE %s
         """
-        params = ('%' + query.lower() + '%',) * 2  
+        params = ('%' + query.lower() + '%',) * 2
 
         if field == "College Code":
             sql_query = "SELECT * FROM college WHERE LOWER(code) LIKE %s"
@@ -454,17 +543,20 @@ def search_college():
             sql_query = "SELECT * FROM college WHERE LOWER(name) LIKE %s"
             params = ('%' + query.lower() + '%',)
 
-        print(f"Executing query: {sql_query} with params: {params}")
+        cursor.execute(f"SELECT COUNT(*) AS total FROM ({sql_query}) AS total_query", params)
+        total_colleges = cursor.fetchone()['total']
 
-        cursor.execute(sql_query, params)
+        cursor.execute(f"{sql_query} LIMIT %s OFFSET %s", params + (per_page, offset))
         colleges = cursor.fetchall()
+
+        total_pages = (total_colleges + per_page - 1) // per_page
 
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         colleges = []  
-    
+
     finally:
         cursor.close()
         connection.close()
 
-    return render_template('colleges.html', colleges=colleges)
+    return render_template('colleges.html', colleges=colleges, page=page, total_pages=total_pages, search_query=query, search_field=field)
