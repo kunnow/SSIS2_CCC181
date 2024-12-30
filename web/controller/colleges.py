@@ -29,10 +29,12 @@ def colleges():
                 if action == 'add':
                     add_college(college_code, college_name)
                     flash('College added successfully!', category='success')
+                    return redirect(url_for('colleges_blueprint.colleges', page=1))
 
                 elif action == 'edit':
                     update_college(college_code, college_name, original_college_code)
                     flash('College updated successfully!', category='success')
+                    return redirect(url_for('colleges_blueprint.colleges', page=page))
 
             except ValueError as err:
                 flash(f"{err}", category='danger')

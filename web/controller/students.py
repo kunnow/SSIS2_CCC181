@@ -52,9 +52,12 @@ def students():
                         add_student(image_url, student_id, firstName, lastName, yearLevel, gender, course)
                         flash('Student added successfully.', category='success')
 
+                    return redirect(url_for('students_blueprint.students', page=1))
+
                 elif action == "edit":
                     update_student(image_url, firstName, lastName, yearLevel, gender, course, student_id)
                     flash('Student updated successfully.', category='success')
+                    return redirect(url_for('students_blueprint.students', page=page))
 
             except ValueError as err:
                 flash(str(err), category='danger')

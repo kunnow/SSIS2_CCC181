@@ -33,10 +33,12 @@ def programs():
                     if action == 'add':
                         add_program(course_code, course_name, college_code)
                         flash('Program added successfully!', category='success')
+                        return redirect(url_for('programs_blueprint.programs', page=1))
 
                     elif action == 'edit':
                         update_program(course_code, course_name, college_code, original_course_code)
                         flash('Program updated successfully!', category='success')
+                        return redirect(url_for('programs_blueprint.programs', page=page))
 
                 except ValueError as err:
                     flash(f"{err}", category='danger')

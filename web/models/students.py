@@ -43,14 +43,14 @@ def is_valid_image(file):
     
     return True
 
-def add_student(image_file, student_id, first_name, last_name, year_level, gender, course):
+def add_student(image_url, student_id, first_name, last_name, year_level, gender, course):
     """Add a new student with image file constraintss."""
     try:
         image_url = None
 
-        if image_file:
-            if is_valid_image(image_file):
-                upload_result = cloudinary.uploader.upload(image_file)
+        if image_url:
+            if is_valid_image(image_url):
+                upload_result = cloudinary.uploader.upload(image_url)
                 image_url = upload_result.get("url")
         
         connection, cursor = get_db_connection()

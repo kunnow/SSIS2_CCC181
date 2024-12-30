@@ -69,9 +69,9 @@
                 {% for student in students %}
                     <tr>
                         <td>{% if student.image_url %}
-                            <img src="{{ studentsimage_url }}" alt="Student Photo" style="width: 50px; height: 50px; object-fit: cover;">
+                            <img src="{{ student.image_url }}" alt="Student Photo" style="width: 50px; height: 50px; object-fit: cover;">
                         {% else %}
-                            <img src="/static/images/default.png" width="200">
+                            <img src="/static/img/default.jpg" width="50px">
                         {% endif %}
                         </td>
                         <td>{{ student.id }}</td>
