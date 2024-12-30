@@ -26,7 +26,7 @@
 
     <h3 id="collegeListTitle" align="center">List of Programs</h3>
     
-    <form method="POST" action="{{ url_for('views.search_program') }}">
+    <form method="POST" action="{{ url_for('programs_blueprint.search_program') }}">
         <div class="search-bar">
             <div class="dropdown">
                 <div id="drop-text" class="dropdown-text">
@@ -71,7 +71,7 @@
                 <button class="btn btn-warning btn-sm" onclick="editProgram('{{ program.code }}', 
                                                                             '{{ program.name }}', 
                                                                             '{{ program.college_code }}')">Edit</button>
-                <form action="{{ url_for('views.delete_program', course_code=program.code) }}" method="POST" style="display:inline;">
+                <form action=""{{ url_for('programs_blueprint.delete_program_route', course_code=program.course_code) }}"" method="POST" style="display:inline;">
                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this program??');">Delete</button>
                 </form>
             </td>
@@ -86,7 +86,7 @@
 </table>
 <br/>
 
-<nav aria-label="Page navigation">
+<nav aria-label="Page navigation" class="pagination-nav">
     <ul class="pagination justify-content-end">
         <li class="page-item {% if page == 1 %}disabled{% endif %}">
             <a class="page-link" href="?page={{ page - 1 }}&search_query={{ search_query }}&search_field={{ search_field }}" tabindex="-1">Previous</a>
@@ -104,7 +104,7 @@
     </ul>
 </nav>
 
-<form id="programForm" method="POST" action="{{ url_for('views.programs') }}" style="display: none; margin-top: 20px;">
+<form id="programForm" method="POST" action="{{ url_for('programs_blueprint.programs') }}" style="display: none; margin-top: 20px;">
     <h3 align="center" id="formTitle">New Program</h3>
 
     <div class="form-group">

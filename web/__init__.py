@@ -1,7 +1,12 @@
 from flask import Flask
 import mysql.connector
+from .route import views
 import cloudinary
 import cloudinary.uploader
+
+from web.controller.students import students_blueprint
+from web.controller.programs import programs_blueprint
+from web.controller.colleges import colleges_blueprint
 
 def create_app():
     app = Flask(__name__)
@@ -17,8 +22,9 @@ def create_app():
         api_secret = "wHG8wuEhqhvEKe4E1m2kIm5lJ4s",
     )
 
-    from .views import views
-
     app.register_blueprint(views, url_prefix='/')
+    app.register_blueprint(students_blueprint, url_prefix='/')
+    app.register_blueprint(programs_blueprint, url_prefix='/')
+    app.register_blueprint(colleges_blueprint, url_prefix='/')
 
     return app

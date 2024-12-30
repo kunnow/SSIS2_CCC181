@@ -1,3 +1,4 @@
+'''
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 import mysql.connector
 import cloudinary.uploader
@@ -560,3 +561,4 @@ def search_college():
         connection.close()
 
     return render_template('colleges.html', colleges=colleges, page=page, total_pages=total_pages, search_query=query, search_field=field)
+'''
