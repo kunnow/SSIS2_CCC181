@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 import cloudinary.uploader
+import cloudinary
 from web.models.students import get_students, add_student, update_student, delete_student_by_id, get_student_by_id, search_students, count_students, is_valid_image
 
 students_blueprint = Blueprint('students_blueprint', __name__)
@@ -17,7 +18,7 @@ def students():
     students, total_students, total_pages = get_students(offset, per_page)
 
     if request.method == 'POST':
-        image = request.files.get('image')
+        image = request.files.get('image_url')
         student_id = request.form.get('id')
         firstName = request.form.get('firstname')
         lastName = request.form.get('lastname')
@@ -58,7 +59,7 @@ def students():
             except ValueError as err:
                 flash(str(err), category='danger')
             except Exception as err:
-                flash('The specified Course Code does not exist.', category='danger')
+                flash(f"Error: {err}", category='danger')
 
     return render_template('students.html', students=students, page=page, total_pages=total_pages)
 

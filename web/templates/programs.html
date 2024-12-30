@@ -49,7 +49,7 @@
         </div>
     </form>     
 
-    <button id="showFormBtn" class="btn btn-success" onclick="showForm()">Add Program</button>
+    <button id="showFormBtn" class="btn btn-success" onclick="showProgramForm()">Add Program</button>
 
 <table id="programTable" class="table">
     <thead>
@@ -86,7 +86,7 @@
 </table>
 <br/>
 
-<nav aria-label="Page navigation" class="pagination-nav">
+<nav aria-label="Page navigation" id="pagination-nav">
     <ul class="pagination justify-content-end">
         <li class="page-item {% if page == 1 %}disabled{% endif %}">
             <a class="page-link" href="?page={{ page - 1 }}&search_query={{ search_query }}&search_field={{ search_field }}" tabindex="-1">Previous</a>
@@ -131,9 +131,10 @@
 </form>
 
 <script>
-    function showForm() {
+    function showProgramForm() {
         document.getElementById("programForm").style.display = "block";  
         document.getElementById("programTable").style.display = "none";
+        document.getElementById("pagination-nav").style.display = "none"; 
         document.getElementById("showFormBtn").style.display = "none";
         document.getElementById("formTitle").innerText = "New Program"; 
         document.getElementById("action").value = "add"; 
@@ -154,7 +155,9 @@
         document.getElementById("formTitle").innerText = "Edit Program"; 
 
         document.getElementById("action").value = "edit"; 
-        document.getElementById("originalCourseCode").value = code; 
+        document.getElementById("originalCourseCode").value = code;
+
+        document.getElementById("pagination-nav").style.display = "none"; 
     }
 
     function cancelForm() {
@@ -162,7 +165,8 @@
         document.getElementById("programForm").style.display = "none";   
         document.getElementById("programTable").style.display = "table";
         document.getElementById("showFormBtn").style.display = "block";  
-        document.getElementById("courseCode").readOnly = false;  
+        document.getElementById("courseCode").readOnly = false;
+        document.getElementById("pagination-nav").style.display = "block"; 
     }
     
 </script>

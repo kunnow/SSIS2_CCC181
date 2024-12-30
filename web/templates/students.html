@@ -69,7 +69,7 @@
                 {% for student in students %}
                     <tr>
                         <td>{% if student.image_url %}
-                            <img src="{{ student.image_url }}" alt="Student Photo" style="width: 50px; height: 50px; object-fit: cover;">
+                            <img src="{{ studentsimage_url }}" alt="Student Photo" style="width: 50px; height: 50px; object-fit: cover;">
                         {% else %}
                             <img src="/static/images/default.png" width="200">
                         {% endif %}
@@ -213,7 +213,8 @@
         document.getElementById("studentForm").style.display = "block";
         document.getElementById("studentTable").style.display = "none";
         document.getElementById("studListTitle").style.display = "none"; 
-        document.getElementById("showFormBtn").style.display = "none"; 
+        document.getElementById("showFormBtn").style.display = "none";
+        document.getElementById("pagination-nav").style.display = "none"; 
 
         console.log(id, firstname, lastname, year, gender, course);  
     }
@@ -227,7 +228,9 @@
             form.submit();
         }
     }
+
     </script>
+    
     <script>
         let dropdownBtnText = document.getElementById("drop-text");
         let list = document.getElementById("list");

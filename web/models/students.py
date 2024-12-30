@@ -4,8 +4,8 @@ import mimetypes
 import cloudinary.uploader
 from flask import current_app
 
-extensions = ['.jpg', '.jpeg', '.png']
-types = ['image/jpeg', 'image/png']
+extensions = {'.jpg', '.jpeg', '.png', '.gif'}
+types = {'image/jpeg', 'image/png', 'image/gif'}
 
 def get_students(offset, per_page):
     try:
@@ -15,7 +15,7 @@ def get_students(offset, per_page):
         total_students = cursor.fetchone()['total']
 
         query = """
-            SELECT id, firstname, lastname, year, gender, course
+            SELECT image_url, id, firstname, lastname, year, gender, course
             FROM student
             LIMIT %s OFFSET %s
         """

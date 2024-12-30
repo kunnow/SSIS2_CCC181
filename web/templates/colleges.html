@@ -91,7 +91,7 @@
     </table>
     <br/>
 
-    <nav aria-label="Page navigation" class="pagination-nav">
+    <nav aria-label="Page navigation" id="pagination-nav">
         <ul class="pagination justify-content-end">
             <li class="page-item {% if page == 1 %}disabled{% endif %}">
                 <a class="page-link" href="?page={{ page - 1 }}&search_query={{ search_query }}&search_field={{ search_field }}" tabindex="-1">Previous</a>
@@ -141,6 +141,7 @@
             document.getElementById("college_name").value = "";
             document.getElementById("college_code").readOnly = false;
             document.getElementById("formTitle").textContent = "New College";
+            document.getElementById("pagination-nav").style.display = "none"; 
         }
 
         function editCollege(code, name) {
@@ -155,6 +156,7 @@
             document.getElementById("edit_code").value = code;   
             document.getElementById("college_code").readOnly = false; 
             document.getElementById("formTitle").textContent = "Edit College"; 
+            document.getElementById("pagination-nav").style.display = "none"; 
         }
 
         function cancelCollegeForm() {
@@ -163,6 +165,7 @@
             document.getElementById("collegeTable").style.display = "table";
             document.getElementById("collegeListTitle").style.display = "block";
             document.getElementById("showCollegeFormBtn").style.display = "block";
+            document.getElementById("pagination-nav").style.display = "block"; 
         } 
     </script>
 
