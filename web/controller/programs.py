@@ -50,7 +50,7 @@ def programs():
     return render_template('programs.html',programs=programs,page=page,total_pages=total_pages, college=college_codes)
 
 @programs_blueprint.route('/programs/delete/<course_code>', methods=['POST'])
-def delete_program(course_code):
+def delete_program_route(course_code):
     try:
         delete_program(course_code)
         flash('Program deleted successfully.', category='success')
