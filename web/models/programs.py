@@ -191,7 +191,7 @@ def list_code():
         connection, cursor = get_db_connection()
 
         cursor.execute("""
-            SELECT DISTINCT code 
+            SELECT DISTINCT code, name
             FROM college 
             WHERE code IS NOT NULL 
             ORDER BY code
@@ -199,7 +199,7 @@ def list_code():
 
         results = cursor.fetchall()
 
-        return [row['code'] for row in results]
+        return [(row['code'], row['name']) for row in results]
 
     except Exception as e:
         print(f"Error fetching college codes: {e}")

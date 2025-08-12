@@ -121,11 +121,12 @@
         <label for="collegeCode">College Code</label>
         <select class="form-select" id="collegeCode" name="collegeCode" required>
             <option value="" disabled selected>Select a college code</option>
-            {% for code in college %}
-                <option value="{{ code }}">{{ code }}</option>
+            {% for code, name in college %}
+                <option value="{{ code }}">{{ code }} - {{ name }}</option>
             {% endfor %}
         </select>
     </div>
+
 
     <input type="hidden" id="originalCourseCode" name="originalCourseCode" />
     <input type="hidden" id="action" name="action" value="add" />

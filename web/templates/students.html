@@ -170,9 +170,10 @@
             <label for="program">Course Code</label>
             <select class="form-select" id="program" name="course" required>
                 <option value="" disabled selected>Select a course code</option>
-                {% for code in course_codes %}
-                <option value="{{ code }}" {% if request.form.course == code %}selected{% endif %}>{{ code }}</option>
+                {% for code, name in course_codes %}
+                <option value="{{ code }}" {% if request.form.course == code %}selected{% endif %}>{{ code }} - {{ name }}</option>
                 {% endfor %}
+
             </select>
         </div>
 
