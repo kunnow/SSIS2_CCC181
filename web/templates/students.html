@@ -158,7 +158,7 @@
 
         <div class="form-group">
             <label for="gender">Gender</label>
-            <select class="form-control" id="gender" name="gender" required>
+            <select class="form-select" id="gender" name="gender" required>
                 <option value="" disabled selected>Select Gender</option>
                 <option value="M">Male</option>
                 <option value="F">Female</option>
@@ -168,7 +168,7 @@
 
         <div class="form-group">
             <label for="program">Course Code</label>
-            <select class="form-control" id="program" name="course" required>
+            <select class="form-select" id="program" name="course" required>
                 <option value="" disabled selected>Select a course code</option>
                 {% for code in course_codes %}
                 <option value="{{ code }}" {% if request.form.course == code %}selected{% endif %}>{{ code }}</option>
