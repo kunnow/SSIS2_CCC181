@@ -44,15 +44,8 @@ def is_valid_image(file):
     return True
 
 def add_student(image_url, student_id, first_name, last_name, year_level, gender, course):
-    """Add a new student with image file constraintss."""
+    """Add a new student with image file constraints."""
     try:
-        image_url = None
-
-        if image_url:
-            if is_valid_image(image_url):
-                upload_result = cloudinary.uploader.upload(image_url)
-                image_url = upload_result.get("url")
-        
         connection, cursor = get_db_connection()
 
         query = """INSERT INTO student (image_url, id, firstname, lastname, year, gender, course) 
@@ -62,23 +55,13 @@ def add_student(image_url, student_id, first_name, last_name, year_level, gender
 
     except mysql.connector.Error as err:
         raise err
-    except ValueError as err:
-        raise err
     finally:
         cursor.close()
         connection.close()
 
-
-def update_student(image_file, first_name, last_name, year_level, gender, course, student_id):
-    """Update student information with image file vcons"""
+def update_student(image_url, first_name, last_name, year_level, gender, course, student_id):
+    """Update student information."""
     try:
-        image_url = None
-
-        if image_file:
-            if is_valid_image(image_file):
-                upload_result = cloudinary.uploader.upload(image_file)
-                image_url = upload_result.get("url")
-
         connection, cursor = get_db_connection()
 
         query = """UPDATE student 
@@ -88,8 +71,6 @@ def update_student(image_file, first_name, last_name, year_level, gender, course
         connection.commit()
 
     except mysql.connector.Error as err:
-        raise err
-    except ValueError as err:
         raise err
     finally:
         cursor.close()

@@ -18,7 +18,7 @@ def students():
     students, total_students, total_pages = get_students(offset, per_page)
 
     if request.method == 'POST':
-        image = request.files.get('image_url')
+        image = request.files.get('image')
         student_id = request.form.get('id')
         firstName = request.form.get('firstname')
         lastName = request.form.get('lastname')
@@ -39,7 +39,7 @@ def students():
                 if image:
                     if is_valid_image(image):
                         upload_result = cloudinary.uploader.upload(image)
-                        image_url = upload_result.get("url")
+                        image_url = upload_result.get("secure_url")
                     else:
                         flash("Invalid image file. Only JPG, JPEG, and PNG files are allowed.", category='danger')
                         return redirect(url_for('students_blueprint.students'))
