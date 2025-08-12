@@ -119,7 +119,12 @@
 
     <div class="form-group">
         <label for="collegeCode">College Code</label>
-        <input type="text" class="form-control" id="collegeCode" name="collegeCode" placeholder="e.g. CCS" required />
+        <select class="form-control" id="collegeCode" name="collegeCode" required>
+            <option value="" disabled selected>Select a college code</option>
+            {% for code in college %}
+                <option value="{{ code }}">{{ code }}</option>
+            {% endfor %}
+        </select>
     </div>
 
     <input type="hidden" id="originalCourseCode" name="originalCourseCode" />

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from web.models.programs import get_programs, add_program, update_program, delete_program, check_college_exists, search_programs, count_programs
+from web.models.programs import get_programs, add_program, update_program, delete_program, check_college_exists, search_programs, count_programs, list_code
 import mysql.connector
 
 programs_blueprint = Blueprint('programs_blueprint', __name__)
@@ -15,6 +15,8 @@ def programs():
     total_pages = 1
 
     programs, total_programs, total_pages = get_programs(offset, per_page)
+
+    college_codes = list_code()
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -45,7 +47,7 @@ def programs():
                 except mysql.connector.Error as err:
                     flash(f"Database error: {err}", category='danger')
 
-    return render_template('programs.html',programs=programs,page=page,total_pages=total_pages)
+    return render_template('programs.html',programs=programs,page=page,total_pages=total_pages, college=college_codes)
 
 @programs_blueprint.route('/programs/delete/<course_code>', methods=['POST'])
 def delete_program_route(course_code):

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 import cloudinary.uploader
 import cloudinary
-from web.models.students import get_students, add_student, update_student, delete_student_by_id, get_student_by_id, search_students, count_students, is_valid_image
+from web.models.students import get_students, add_student, update_student, delete_student_by_id, get_student_by_id, search_students, count_students, is_valid_image, list_course_code
 
 students_blueprint = Blueprint('students_blueprint', __name__)
 
@@ -16,6 +16,8 @@ def students():
     total_pages = 1
 
     students, total_students, total_pages = get_students(offset, per_page)
+
+    course_codes = list_course_code()
 
     if request.method == 'POST':
         image = request.files.get('image')
@@ -64,7 +66,7 @@ def students():
             except Exception as err:
                 flash(f"Error: {err}", category='danger')
 
-    return render_template('students.html', students=students, page=page, total_pages=total_pages)
+    return render_template('students.html', students=students, page=page, total_pages=total_pages, course_codes=course_codes)
 
 @students_blueprint.route('/students/delete/<student_id>', methods=['POST'])
 def delete_student(student_id):

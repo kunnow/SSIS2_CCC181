@@ -183,6 +183,34 @@ def count_programs(query, field):
         if connection is not None:
             connection.close()
 
+def list_code():
+    
+    connection = None
+    cursor = None
+    try:
+        connection, cursor = get_db_connection()
+
+        cursor.execute("""
+            SELECT DISTINCT code 
+            FROM college 
+            WHERE code IS NOT NULL 
+            ORDER BY code
+        """)
+
+        results = cursor.fetchall()
+
+        return [row['code'] for row in results]
+
+    except Exception as e:
+        print(f"Error fetching college codes: {e}")
+        return []
+    
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
 def get_db_connection():
     """Helper function to establish and return a database connection and cursor."""
     connection = mysql.connector.connect(

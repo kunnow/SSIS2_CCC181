@@ -229,6 +229,34 @@ def count_students(query, field):
         if connection is not None:
             connection.close()
 
+def list_course_code():
+    connection = None
+    cursor = None
+
+    try:
+        connection, cursor = get_db_connection()
+
+        cursor.execute("""
+            SELECT DISTINCT college_code 
+            FROM program 
+            WHERE college_code IS NOT NULL 
+            ORDER BY college_code
+        """)
+
+        results = cursor.fetchall()
+
+        return [row['college_code'] for row in results]
+
+    except Exception as e:
+        print(f"Error fetching college codes: {e}")
+        return []
+    
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
 def get_db_connection():
     """Helper function to establish and return a database connection and cursor."""
     connection = mysql.connector.connect(
