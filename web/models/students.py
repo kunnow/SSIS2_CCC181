@@ -7,6 +7,8 @@ from flask import current_app
 extensions = {'.jpg', '.jpeg', '.png', '.gif'}
 types = {'image/jpeg', 'image/png', 'image/gif'}
 
+MAX_IMAGE_SIZE = 2 * 1024 * 1024
+
 def get_students(offset, per_page):
 
     connection = None

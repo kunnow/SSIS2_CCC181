@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 import cloudinary.uploader
 import cloudinary
+from werkzeug.utils import secure_filename
 from web.models.students import get_students, add_student, update_student, delete_student_by_id, get_student_by_id, search_students, count_students, is_valid_image, list_course_code
 
 students_blueprint = Blueprint('students_blueprint', __name__)
@@ -39,6 +40,15 @@ def students():
             try:
                 image_url = None
                 if image:
+                    image.seek(0, 2)
+                    size = image.tell()
+                    image.seek(0)
+
+                    MAX_IMAGE_SIZE = 2 * 1024 * 1024
+                    if size > MAX_IMAGE_SIZE:
+                        flash(f"Image size is too large. Max allowed size is 2 MB.", category='danger')
+                        return redirect(url_for('students_blueprint.students'))
+
                     if is_valid_image(image):
                         upload_result = cloudinary.uploader.upload(image)
                         image_url = upload_result.get("secure_url")
