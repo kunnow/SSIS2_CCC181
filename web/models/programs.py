@@ -2,6 +2,8 @@ import mysql.connector
 from flask import current_app
 
 def get_programs(offset, per_page):
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -22,10 +24,14 @@ def get_programs(offset, per_page):
     except mysql.connector.Error as err:
         return [], 0, 1
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def add_program(course_code, course_name, college_code):
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -36,10 +42,14 @@ def add_program(course_code, course_name, college_code):
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def update_program(course_code, course_name, college_code, original_course_code):
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -57,10 +67,15 @@ def update_program(course_code, course_name, college_code, original_course_code)
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def delete_program(course_code):
+
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -71,10 +86,14 @@ def delete_program(course_code):
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def check_college_exists(college_code):
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -85,11 +104,15 @@ def check_college_exists(college_code):
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def search_programs(query, field, offset, per_page):
     """Search for programs based on query and field."""
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -119,11 +142,15 @@ def search_programs(query, field, offset, per_page):
     except mysql.connector.Error as err:
         return [], str(err)
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def count_programs(query, field):
     """Count the number of programs matching the search query and field."""
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -151,8 +178,10 @@ def count_programs(query, field):
     except mysql.connector.Error as err:
         return 0
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def get_db_connection():
     """Helper function to establish and return a database connection and cursor."""

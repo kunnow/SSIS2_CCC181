@@ -2,6 +2,8 @@ import mysql.connector
 from flask import current_app
 
 def get_colleges(offset, per_page):
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -22,10 +24,14 @@ def get_colleges(offset, per_page):
     except mysql.connector.Error as err:
         return [], 0, 1
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def add_college(college_code, college_name):
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -43,10 +49,14 @@ def add_college(college_code, college_name):
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def update_college(college_code, college_name, original_college_code):
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -64,10 +74,14 @@ def update_college(college_code, college_name, original_college_code):
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def delete_college(college_code):
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -78,11 +92,16 @@ def delete_college(college_code):
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def search_colleges(query, field, offset, per_page):
     """Search for colleges based on query and field."""
+
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -108,11 +127,16 @@ def search_colleges(query, field, offset, per_page):
     except mysql.connector.Error as err:
         return [], str(err)
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def count_colleges(query, field):
     """Count the number of colleges matching the search query and field."""
+
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -136,8 +160,10 @@ def count_colleges(query, field):
     except mysql.connector.Error as err:
         return 0
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def get_db_connection():
     """Helper function to establish and return a database connection and cursor."""

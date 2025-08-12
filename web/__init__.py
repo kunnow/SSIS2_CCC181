@@ -7,19 +7,26 @@ import cloudinary.uploader
 from web.controller.students import students_blueprint
 from web.controller.programs import programs_blueprint
 from web.controller.colleges import colleges_blueprint
+from config import SECRET_KEY, MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB, CLOUD_NAME, API_KEY, API_SECRET
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = '12345687'
-    app.config['MYSQL_HOST'] = 'localhost'
-    app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'shir1234'
-    app.config['MYSQL_DB'] = 'ssis2'
+
+    print("Cloudinary credentials:")
+    print("CLOUD_NAME =", CLOUD_NAME)
+    print("API_KEY =", API_KEY)
+    print("API_SECRET =", API_SECRET)
+    
+    app.config['SECRET_KEY'] = SECRET_KEY
+    app.config['MYSQL_HOST'] = MYSQL_HOST
+    app.config['MYSQL_USER'] = MYSQL_USER
+    app.config['MYSQL_PASSWORD'] = MYSQL_PASSWORD
+    app.config['MYSQL_DB'] = MYSQL_DB
 
     cloudinary.config(
-        cloud_name = "dg8ofwmtu",
-        api_key = "596471217998654",
-        api_secret = "wHG8wuEhqhvEKe4E1m2kIm5lJ4s",
+        cloud_name=CLOUD_NAME,
+        api_key=API_KEY,
+        api_secret=API_SECRET
     )
 
     app.register_blueprint(views, url_prefix='/')

@@ -8,6 +8,9 @@ extensions = {'.jpg', '.jpeg', '.png', '.gif'}
 types = {'image/jpeg', 'image/png', 'image/gif'}
 
 def get_students(offset, per_page):
+
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
         
@@ -28,10 +31,13 @@ def get_students(offset, per_page):
     except mysql.connector.Error as err:
         return [], 0, 1
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def is_valid_image(file):
+    
     """Check if the file is a valid image based on its extension and type."""
     _, file_extension = os.path.splitext(file.filename)
     if file_extension.lower() not in extensions:
@@ -45,6 +51,9 @@ def is_valid_image(file):
 
 def add_student(image_url, student_id, first_name, last_name, year_level, gender, course):
     """Add a new student with image file constraints."""
+
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -56,11 +65,16 @@ def add_student(image_url, student_id, first_name, last_name, year_level, gender
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def update_student(image_url, first_name, last_name, year_level, gender, course, student_id):
     """Update student information."""
+
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -73,11 +87,15 @@ def update_student(image_url, first_name, last_name, year_level, gender, course,
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 
 def delete_student_by_id(student_id):
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -88,10 +106,14 @@ def delete_student_by_id(student_id):
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def get_student_by_id(student_id):
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -102,11 +124,16 @@ def get_student_by_id(student_id):
     except mysql.connector.Error as err:
         raise err
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def search_students(query, field, offset, per_page):
     """Search for students based on query and field."""
+
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
@@ -148,18 +175,23 @@ def search_students(query, field, offset, per_page):
     except mysql.connector.Error as err:
         return [], str(err)
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def count_students(query, field):
     """Count the number of students matching the search query and field."""
+    
+    connection = None
+    cursor = None
     try:
         connection, cursor = get_db_connection()
 
         count_query = """
             SELECT COUNT(*) AS total FROM student 
             WHERE LOWER(id) LIKE %s 
-            OR LOWER(firstname) LIKE %s 
+            OR LOWER(firstname) LIKE %s
             OR LOWER(lastname) LIKE %s 
             OR year LIKE %s 
             OR LOWER(gender) LIKE %s 
@@ -192,8 +224,10 @@ def count_students(query, field):
     except mysql.connector.Error as err:
         return 0
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
 
 def get_db_connection():
     """Helper function to establish and return a database connection and cursor."""
@@ -205,3 +239,4 @@ def get_db_connection():
     )
     cursor = connection.cursor(dictionary=True)
     return connection, cursor
+ 
